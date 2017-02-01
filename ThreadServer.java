@@ -6,7 +6,6 @@ import java.io.*;
 
 
 public class ThreadServer extends Thread {
-    
     Socket sock;
     InetAddress cliAddr;
     int cliPort;

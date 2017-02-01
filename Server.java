@@ -9,7 +9,7 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
         int portNumber = 5555;
-        ArrayList<ServerSocket> USERS;
+        ArrayList<Socket> USERS;
         USERS = new ArrayList<>();
         if(args.length > 0){
             if(args.length == 1) portNumber = Integer.parseInt(args[0]);
@@ -26,8 +26,9 @@ public class Server {
             String recievedMsg;
         while(true){
             ThreadServer threadServer = new ThreadServer(servSock.accept());
-            USERS.add(servSock);
+            USERS.add(threadServer.sock);
             threadServer.start();
+            System.out.println(USERS);
                    }
              }
         catch(IOException e)  {
