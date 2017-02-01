@@ -1,4 +1,4 @@
-package Oblig1;
+package Oblig1.TCPChat;
 
 import java.io.IOException;
 import java.net.*;

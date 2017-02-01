@@ -1,5 +1,5 @@
 
-package Oblig1;
+package Oblig1.TCPChat;
 
 import java.net.*;
 import java.io.*;
