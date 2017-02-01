@@ -25,9 +25,11 @@ public class ThreadServer extends Thread {
             PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 ){
-                 String recievedMsg = in.readLine();
-                 while(recievedMsg != null){
+                 String recievedMsg;
+                 while((recievedMsg = in.readLine()) != null){
+                     System.out.println(recievedMsg);
                      String outMsg = recievedMsg.toUpperCase();
+                     System.out.println(outMsg);
                      out.println(outMsg);
                  }
                  sock.close();
