@@ -22,7 +22,6 @@ public class Server {
         try(
             ServerSocket servSock = new ServerSocket(portNumber);
             ){
-        
         while(true){
             ThreadServer threadServer = new ThreadServer(servSock.accept(), users);
             users.add(threadServer.sock);

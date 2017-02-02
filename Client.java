@@ -29,9 +29,9 @@ public class Client implements Runnable {
            }
         }
         System.out.println("Client is up!");
-        System.out.println("Enter usernumber to chat with: ");
+        //System.out.println("Enter usernumber to chat with: ");
         
-        uNum = userNum();
+        //uNum = userNum();
         try{
               cliSocket = new Socket(hostName, portNumber);
               outStream = new PrintStream(cliSocket.getOutputStream());
@@ -52,7 +52,7 @@ public class Client implements Runnable {
                 new Thread(new Client()).start();
                 
                 while(!closed){
-                outStream.print(uNum);
+                //outStream.print(uNum);
                 //System.out.println(uNum);
                 outStream.println(keyIn.readLine().trim());
                 }

@@ -27,7 +27,7 @@ public class ThreadServer extends Thread {
     @Override
     public void run(){
         
-       try(
+      /* try(
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 ){
                  recivedNum = in.readLine();
@@ -36,10 +36,10 @@ public class ThreadServer extends Thread {
                  }
         catch(IOException e){
             System.out.println(e);
-        }
+        }*/
 
         try(
-            PrintWriter out = new PrintWriter(users.get(Integer.parseInt(recivedNum)).getOutputStream(), true);
+            PrintWriter out = new PrintWriter(users.get(1).getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 ){
                  String recievedMsg;
