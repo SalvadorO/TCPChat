@@ -10,6 +10,7 @@ public class Client implements Runnable {
     private static DataInputStream inStream;
     private static BufferedReader keyIn;
     private static boolean closed = false;
+    private static String uNum;
 
     public static void main(String[] args) throws IOException {
         String hostName = "localhost";
@@ -28,7 +29,9 @@ public class Client implements Runnable {
            }
         }
         System.out.println("Client is up!");
+        System.out.println("Enter usernumber to chat with: ");
         
+        uNum = userNum();
         try{
               cliSocket = new Socket(hostName, portNumber);
               outStream = new PrintStream(cliSocket.getOutputStream());
@@ -42,13 +45,16 @@ public class Client implements Runnable {
         /*
         * Everything up and running?
         * Lets write to the socket
-        * Creates a thread to read from the server (run)
+        * 
         */
         if(cliSocket != null && outStream != null && inStream != null){
             try{
                 new Thread(new Client()).start();
+                
                 while(!closed){
-                    outStream.println(keyIn.readLine().trim());
+                outStream.print(uNum);
+                //System.out.println(uNum);
+                outStream.println(keyIn.readLine().trim());
                 }
                 outStream.close();
                 inStream.close();
@@ -64,7 +70,7 @@ public class Client implements Runnable {
     
     
     /*
-    * Reads from the server
+    * Creates a thread to read from the server (run)
     *
     */
     @Override
@@ -86,4 +92,14 @@ public class Client implements Runnable {
                 
            }
     }*/
+    /*
+    * Which client you connect to
+    *
+    */
+    private static String userNum() throws IOException{
+        String num;
+        keyIn = new BufferedReader(new InputStreamReader(System.in));
+            num = keyIn.readLine();
+        return num;
+    }
 }

@@ -23,11 +23,11 @@ public class Server {
             ServerSocket servSock = new ServerSocket(portNumber);
             ){
         
-            String recievedMsg;
         while(true){
             ThreadServer threadServer = new ThreadServer(servSock.accept(), users);
             users.add(threadServer.sock);
             threadServer.start();
+            System.out.println(users);
                    }
              }
         catch(IOException e)  {

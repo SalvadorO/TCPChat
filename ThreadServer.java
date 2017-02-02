@@ -12,6 +12,9 @@ public class ThreadServer extends Thread {
     int cliPort;
     int servPort;
     ArrayList<Socket> users;
+    String recivedNum;
+
+    
     
     public ThreadServer (Socket sock, ArrayList<Socket> users){
         this.sock = sock;
@@ -23,19 +26,29 @@ public class ThreadServer extends Thread {
     
     @Override
     public void run(){
+        
+       try(
+            BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                ){
+                 recivedNum = in.readLine();
+                 sock.close();
+                 System.out.println("ETTER: " + recivedNum);
+                 }
+        catch(IOException e){
+            System.out.println(e);
+        }
+
         try(
-            PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+            PrintWriter out = new PrintWriter(users.get(Integer.parseInt(recivedNum)).getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 ){
                  String recievedMsg;
                  while((recievedMsg = in.readLine()) != null){
                      System.out.println(recievedMsg);
-                     String outMsg = recievedMsg.toUpperCase();
+                     String outMsg = recievedMsg;
                      System.out.println(outMsg);
+                     out.println(outMsg);
                      
-                     //if(users.get(1).getPort() == cliPort){ 
-                         out.println(outMsg);
-                     //}
                  }
                  sock.close();
                  }
