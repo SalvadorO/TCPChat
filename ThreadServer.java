@@ -4,15 +4,18 @@ package Oblig1.TCPChat;
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class ThreadServer extends Thread {
-    Socket sock;
-    InetAddress cliAddr;
-    int cliPort;
-    int servPort;
-    ArrayList<Socket> users;
-    String recivedNum;
+   public Socket sock;
+   public InetAddress cliAddr;
+   public int cliPort;
+   public int servPort;
+   public ArrayList<Socket> users;
+   public String talkToNum = "0";
 
     
     
@@ -25,28 +28,21 @@ public class ThreadServer extends Thread {
     }
     
     @Override
-    public void run(){
-        
-      /* try(
+    public void run(){   
+   try(
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-                ){
-                 recivedNum = in.readLine();
-                 sock.close();
-                 System.out.println("ETTER: " + recivedNum);
-                 }
-        catch(IOException e){
-            System.out.println(e);
-        }*/
-
-        try(
-            PrintWriter out = new PrintWriter(users.get(1).getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-                ){
-                 String recievedMsg;
-                 while((recievedMsg = in.readLine()) != null){
-                     System.out.println(recievedMsg);
-                     String outMsg = recievedMsg;
-                     System.out.println(outMsg);
+      )
+      {
+                 String receivedMsg;
+                 while((receivedMsg = in.readLine()) != null){
+                     System.out.println("Motatt melding er : " + receivedMsg + " !");
+                     if(getTalkToNum(receivedMsg).matches()) {
+                         talkToNum = setTalkToNum(getTalkToNum(receivedMsg));
+                         System.out.println(sock.getPort() + " snakker til " + users.get(Integer.parseInt(talkToNum)).getPort());
+                     }
+                     String outMsg = receivedMsg;
+                     PrintWriter out = new PrintWriter(users.get(Integer.parseInt(talkToNum)).getOutputStream(), true);
+                     //System.out.println(outMsg);
                      out.println(outMsg);
                      
                  }
@@ -57,4 +53,17 @@ public class ThreadServer extends Thread {
         }
     }
     
+    private Matcher getTalkToNum(String a){
+        String p = "(.+)([: \\s /])(\\d+)";
+        Pattern pt = Pattern.compile(p);
+        Matcher m = pt.matcher(a);
+        return m;
+    }
+    private String setTalkToNum(Matcher m){
+        String b = null;
+        while(m.find()){
+            b = m.group(3);
+        }
+                   return b;
+    }
 }

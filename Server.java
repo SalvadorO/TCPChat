@@ -17,11 +17,11 @@ public class Server {
                 System.err.println("Please write a valid port number");
             }
         }
-        System.out.println("Your server is up");
         
         try(
             ServerSocket servSock = new ServerSocket(portNumber);
             ){
+            System.out.println("Your server is up");
         while(true){
             ThreadServer threadServer = new ThreadServer(servSock.accept(), users);
             users.add(threadServer.sock);

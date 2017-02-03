@@ -5,12 +5,12 @@ import java.net.*;
 import java.io.*;
 
 public class Client implements Runnable {
-    private static Socket cliSocket;
-    private static PrintStream outStream;
-    private static DataInputStream inStream;
-    private static BufferedReader keyIn;
-    private static boolean closed = false;
-    private static String uNum;
+    public static Socket cliSocket;
+    public static PrintStream outStream;
+    public static DataInputStream inStream;
+    public static BufferedReader keyIn;
+    public static boolean closed = false;
+    public static String uNum;
 
     public static void main(String[] args) throws IOException {
         String hostName = "localhost";
@@ -28,10 +28,7 @@ public class Client implements Runnable {
              }
            }
         }
-        System.out.println("Client is up!");
-        //System.out.println("Enter usernumber to chat with: ");
         
-        //uNum = userNum();
         try{
               cliSocket = new Socket(hostName, portNumber);
               outStream = new PrintStream(cliSocket.getOutputStream());
@@ -41,7 +38,8 @@ public class Client implements Runnable {
                       
         catch(UnknownHostException e){System.out.println("Unknown host!");}
         catch(IOException e){System.out.println(e);}
-        
+        System.out.println("Client is up!");
+
         /*
         * Everything up and running?
         * Lets write to the socket
@@ -50,11 +48,11 @@ public class Client implements Runnable {
         if(cliSocket != null && outStream != null && inStream != null){
             try{
                 new Thread(new Client()).start();
-                
-                while(!closed){
-                //outStream.print(uNum);
-                //System.out.println(uNum);
-                outStream.println(keyIn.readLine().trim());
+                   while(!closed){
+                   int port = cliSocket.getLocalPort();
+                   String keyin = keyIn.readLine().trim();
+                    outStream.println(port + ": " + keyin);
+                    System.out.println(port + ": " + keyin + "Lokal utskrift");
                 }
                 outStream.close();
                 inStream.close();
