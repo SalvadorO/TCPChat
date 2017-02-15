@@ -13,6 +13,7 @@ public class Server {
         boolean test[] = new boolean[1];
         test[0] = true;
         ArrayList<Users> userList = new ArrayList<>();
+        ArrayList<String> usernames = new ArrayList<>();
 
 
 
@@ -28,7 +29,7 @@ public class Server {
                 ServerSocket servSock = new ServerSocket(portNumber);
         ){
             while(true){
-                ThreadServer threadServer = new ThreadServer(servSock.accept(), sockets,test,userList);
+                ThreadServer threadServer = new ThreadServer(servSock.accept(), sockets,test,usernames,userList);
                 sockets.add(threadServer.sock);
                 threadServer.start();
 

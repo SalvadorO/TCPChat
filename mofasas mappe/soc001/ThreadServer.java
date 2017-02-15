@@ -5,6 +5,9 @@ import javafx.collections.ObservableMap;
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,21 +21,25 @@ public class ThreadServer extends Thread {
     ArrayList<Users> usersList = new ArrayList<>();
     ArrayList<String> usersnames = new ArrayList<>();
     boolean[] test;
-    ObjectOutputStream objectOutput;
     Users user;
+    PrintWriter out;
+    BufferedReader in;
 
 
 
-    public ThreadServer(Socket sock, ArrayList<Socket> users, boolean[] test, ArrayList<Users> usersList) {
+    public ThreadServer(Socket sock, ArrayList<Socket> users, boolean[] test, ArrayList<String> usersnames,ArrayList<Users> usersList) {
         this.sock = sock;
         cliAddr = sock.getInetAddress();
         cliPort = sock.getPort();
         servPort = sock.getLocalPort();
         this.sockets = users;
         this.test = test;
+        this.usersnames = usersnames;
         this.usersList = usersList;
 
     }
+
+
 
     @Override
     public void run() {
@@ -43,21 +50,24 @@ public class ThreadServer extends Thread {
 
 
         try {
-             objectOutput = new ObjectOutputStream(sock.getOutputStream());
 
+             out = new PrintWriter(sock.getOutputStream(), true);
+             in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
             checkUserPassword();
+
             sendUserList();
 
 
 
 
             // chat
-            chat(0,1);
+            chat(0,0);
 
             // or wait ...
             while (isSocketConnected(sock)){
                 Thread.sleep(1);
+
             }
 
 
@@ -66,10 +76,13 @@ public class ThreadServer extends Thread {
 
         } catch (InterruptedException p){
 
+        } catch (ClassNotFoundException cs){
+            cs.getCause();
         } finally {
             sockets.remove(sock);
             usersList.remove(user);
             usersnames.remove(user.username);
+           // sendUserList();
             System.out.println(sockets.size() + "sock er closed");
 
 
@@ -104,9 +117,9 @@ public class ThreadServer extends Thread {
     }
 
     private  void message(Socket sender, Socket reciever)  throws IOException {
+         PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+          BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
-        PrintWriter out = new PrintWriter(reciever.getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(sender.getInputStream()));
 
         String recievedMsg;
 
@@ -123,9 +136,9 @@ public class ThreadServer extends Thread {
         System.out.println("lego");
     }
 
-    private void checkUserPassword() throws IOException{
-        PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+    private void checkUserPassword() throws IOException, ClassNotFoundException{
+
+
 
         String usernamepassword;
 
@@ -141,9 +154,10 @@ public class ThreadServer extends Thread {
                 usersnames.add(user.username);
                 out.println("[LogInApproved*OK]");
                 System.out.println(usernamepassword);
-
                 break;
-            }
+
+            } else
+                out.println("[LogInNotApproved*OK]");
 
 
         }
@@ -166,12 +180,25 @@ public class ThreadServer extends Thread {
     }
 
     private void sendUserList(){
-        try {
-            objectOutput.writeObject(usersnames);
-            objectOutput.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        Timer t = new Timer();
+
+        t.scheduleAtFixedRate(
+                new TimerTask()
+                {
+                    public void run()
+                    {
+                        out.println("[SendingListOfUsers*OK]");
+                        for (String username : usersnames) out.println(username);
+                        out.println("[SendingListOfUsers*DONE]");                    }
+                },
+                0,      // run first occurrence immediately
+                1000);  // run every three seconds
+
+
+
+
+
     }
 
 }
