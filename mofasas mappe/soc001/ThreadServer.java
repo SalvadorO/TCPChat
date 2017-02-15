@@ -58,11 +58,11 @@ public class ThreadServer extends Thread {
 
             sendUserList();
 
-
+            manageChat();
 
 
             // chat
-            chat(0,0);
+           // chat(0,1);
 
             // or wait ...
             while (isSocketConnected(sock)){
@@ -117,8 +117,8 @@ public class ThreadServer extends Thread {
     }
 
     private  void message(Socket sender, Socket reciever)  throws IOException {
-         PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-          BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+         PrintWriter out = new PrintWriter(reciever.getOutputStream(), true);
+          BufferedReader in = new BufferedReader(new InputStreamReader(sender.getInputStream()));
 
 
         String recievedMsg;
@@ -198,6 +198,31 @@ public class ThreadServer extends Thread {
 
 
 
+
+    }
+
+    private void manageChat() throws IOException{
+
+        String user1,user2;
+        Socket socket1 = null, socket2 = null;
+
+        if (in.readLine().equals("[RequestingChat*OK]")){
+            user1 = in.readLine();
+            user2 = in.readLine();
+            for ( Users user : usersList){
+                if (user.username.equals(user1)){
+                    System.out.println("bruker1 :" + user.username);
+
+                    socket1 = user.socket;
+                }
+                 if (user.username.equals(user2)){
+                    System.out.println("bruker2 :" + user.username);
+                    socket2 = user.socket;
+                }
+            }
+            message(socket1,socket2);
+            message(socket2,socket1);
+        }
 
     }
 
