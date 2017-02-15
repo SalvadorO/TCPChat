@@ -4,6 +4,9 @@ package sample;
 /**
  * Created by Mustafe on 07.02.2017.
  */
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.TextArea;
@@ -23,6 +26,7 @@ public class ClientFX  extends Service<Void> {
     private PrintStream outStream;
     private BufferedReader inStream;
     ArrayList<String> users = new ArrayList<>();
+    final ObservableList<String> observableUsers = FXCollections.observableArrayList();
     boolean isClientOnline,loggedOn = false;
     String hostName;
     int portNumber;
@@ -66,7 +70,7 @@ public class ClientFX  extends Service<Void> {
 
 
     @Override
-    protected Task<Void> createTask() {
+    protected synchronized Task<Void> createTask() {
 
         Task<Void> task = new Task<Void>() {
             protected Void call() throws InterruptedException {
@@ -116,8 +120,13 @@ public class ClientFX  extends Service<Void> {
                                 while ((listOfUsers = inStream.readLine()) != null && !listOfUsers.equals("[SendingListOfUsers*DONE]")) {
                                     users.add(listOfUsers);
 
+
                                 }
-                                System.out.println(users);
+                           Platform.runLater(() ->{
+                                    observableUsers.clear();
+                                    observableUsers.addAll(users);
+
+                                });
 
                             } else{
                                 if (textArea.getText().isEmpty()) textArea.setText("Friend: " + inLine);
@@ -171,8 +180,16 @@ public class ClientFX  extends Service<Void> {
         return loggedOn;
     }
 
+    public void setConnectTo(String username2) {
 
+        outStream.println("[RequestingChat*OK]");
+        outStream.println(username);
+        outStream.println(username2);
+    }
 
+    public ObservableList<String> getObservableUsers() {
+        return observableUsers;
+    }
 
 
 }

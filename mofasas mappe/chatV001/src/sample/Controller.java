@@ -1,15 +1,17 @@
 package sample;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.awt.event.ActionEvent;
@@ -32,7 +34,9 @@ public class Controller implements Initializable{
     Button loginbutton;
 
     @FXML
-    ListView userlist;
+    ListView<String> userlist;
+
+    ObservableList<String> observableUsers;
 
     public void startClient() {
 
@@ -46,6 +50,7 @@ public class Controller implements Initializable{
     }
 
 
+    @SuppressWarnings("unchecked")
     @FXML public void loginserver(){
 
 
@@ -80,10 +85,23 @@ public class Controller implements Initializable{
                 userlist.setDisable(false);
                 userlist.setVisible(true);
 
-              //  client.setTextArea(txtArea);
-              //  client.setTextField(txtField);
 
-            }
+                userlist.setItems(client.getObservableUsers());
+
+
+                userlist.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+                userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>()
+                {
+                    public void changed(ObservableValue<? extends String> observableval, String oldval, String newval)
+                    {
+                        String connectToThisUser = userlist.getSelectionModel().getSelectedItem();
+                        if (connectToThisUser != null) client.setConnectTo(connectToThisUser);
+                    }
+                });
+
+
+    }
 
     }
 
