@@ -15,6 +15,8 @@ import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ClientFX  extends Service<Void> {
     private Socket cliSocket;
@@ -50,10 +52,9 @@ public class ClientFX  extends Service<Void> {
             System.out.println(e + "nana");
         }
 
+
+
         this.start();
-
-
-
 
 
     }
@@ -61,6 +62,8 @@ public class ClientFX  extends Service<Void> {
     public Socket getCliSocket() {
         return cliSocket;
     }
+
+
 
     @Override
     protected Task<Void> createTask() {
@@ -82,16 +85,16 @@ public class ClientFX  extends Service<Void> {
                             if (inLine.equals("[LogInApproved*OK]")){
                                 loggedOn = true;
                                 break;
-
+                            } else if (inLine.equals("[LogInNotApproved*OK]")){
+                                System.out.println("WRONG PASSORD OR USERNAME");
                             }
+
 
                         }
 
                     }
 
 
-                    recieveUserList(cliSocket);
-                    System.out.println(users.toString());
 
                     textField.setOnAction(event -> {
 
@@ -104,10 +107,28 @@ public class ClientFX  extends Service<Void> {
                             textField.clear();
                         });
 
+                    String listOfUsers;
                         while ((inLine = inStream.readLine()) != null) {
 
-                            if (textArea.getText().isEmpty()) textArea.setText("Friend: " + inLine);
-                            else textArea.setText(textArea.getText() + "\n" + "Friend: " + inLine);
+                            if (inLine.equals("[SendingListOfUsers*OK]")) {
+                                users.clear();
+
+                                while ((listOfUsers = inStream.readLine()) != null && !listOfUsers.equals("[SendingListOfUsers*DONE]")) {
+                                    users.add(listOfUsers);
+
+                                }
+                                System.out.println(users);
+
+                            } else{
+                                if (textArea.getText().isEmpty()) textArea.setText("Friend: " + inLine);
+                                else textArea.setText(textArea.getText() + "\n" + "Friend: " + inLine);
+                            }
+
+
+
+
+
+
 
 
                         }
@@ -116,7 +137,7 @@ public class ClientFX  extends Service<Void> {
 
                     cliSocket.close();
                 } catch (IOException e) {
-                    System.out.println(e);
+                    System.out.println("IOEx");
                     outStream.close();
                 }
                 System.out.println("call ferdiglill");
@@ -150,27 +171,8 @@ public class ClientFX  extends Service<Void> {
         return loggedOn;
     }
 
-    public void setTextField(TextField textField) {
-        this.textField = textField;
-    }
-
-    public void setTextArea(TextArea textArea) {
-        this.textArea = textArea;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void recieveUserList(Socket s){
-        try {
-            ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-            users = (ArrayList<String>) ois.readObject();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException cf){
-            cf.getCause();
-        }
 
 
-    }
+
 
 }
