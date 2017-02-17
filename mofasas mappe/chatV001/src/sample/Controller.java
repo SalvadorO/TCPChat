@@ -36,7 +36,6 @@ public class Controller implements Initializable{
     @FXML
     ListView<String> userlist;
 
-    ObservableList<String> observableUsers;
 
     public void startClient() {
 
@@ -96,7 +95,7 @@ public class Controller implements Initializable{
                     public void changed(ObservableValue<? extends String> observableval, String oldval, String newval)
                     {
                         String connectToThisUser = userlist.getSelectionModel().getSelectedItem();
-                        if (connectToThisUser != null) client.setConnectTo(connectToThisUser);
+                        if (connectToThisUser != null && !connectToThisUser.equals("null") &&!connectToThisUser.equals("")) client.setConnectTo(connectToThisUser);
                     }
                 });
 

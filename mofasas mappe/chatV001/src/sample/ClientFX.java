@@ -32,7 +32,7 @@ public class ClientFX  extends Service<Void> {
     int portNumber;
     TextArea textArea;
     TextField textField;
-    String username,password;
+    String username,username2,password;
 
 
 
@@ -128,9 +128,13 @@ public class ClientFX  extends Service<Void> {
 
                                 });
 
-                            } else{
-                                if (textArea.getText().isEmpty()) textArea.setText("Friend: " + inLine);
-                                else textArea.setText(textArea.getText() + "\n" + "Friend: " + inLine);
+                            } else if (inLine.equals("[RequestingNEWChat*OK]")){
+
+
+
+                            } else {
+                                if (textArea.getText().isEmpty()) textArea.setText(username2 + ": " + inLine);
+                                else textArea.setText(textArea.getText() + "\n" + username2 + ": " + inLine);
                             }
 
 
@@ -182,9 +186,21 @@ public class ClientFX  extends Service<Void> {
 
     public void setConnectTo(String username2) {
 
+
+
         outStream.println("[RequestingChat*OK]");
-        outStream.println(username);
+
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         outStream.println(username2);
+        this.username2 = username2;
+
+      //  System.out.println("username: " + username + " username2: " + username2);
+
+
     }
 
     public ObservableList<String> getObservableUsers() {
