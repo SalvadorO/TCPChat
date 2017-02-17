@@ -58,11 +58,8 @@ public class ThreadServer extends Thread {
 
             sendUserList();
 
-            manageChat();
+            if (in.readLine().equals("[RequestingChat*OK]")) manageChat();
 
-
-            // chat
-           // chat(0,1);
 
             // or wait ...
             while (isSocketConnected(sock)){
@@ -82,7 +79,7 @@ public class ThreadServer extends Thread {
             sockets.remove(sock);
             usersList.remove(user);
             usersnames.remove(user.username);
-           // sendUserList();
+
             System.out.println(sockets.size() + "sock er closed");
 
 
@@ -92,48 +89,38 @@ public class ThreadServer extends Thread {
 
     
 
-    private void chat(int clientNr1, int clientNr2) throws IOException, InterruptedException{
 
-        int firstClient = clientNr1 > clientNr2 ? clientNr2 : clientNr1;
-        int secnClient = clientNr2 > clientNr1 ? clientNr2 : clientNr1;
-
-
-        if (sockets.size() <= secnClient && sockets.size() > firstClient  && sockets.get(firstClient) == sock) {
-            test[0] = false;
-
-            while (!test[0] && isSocketConnected(sockets.get(firstClient))){
-                Thread.sleep(1);
-
-            }
-            if (isSocketConnected(sock))
-            message(sock, sockets.get(secnClient));
-        }
-
-        else if (sockets.size() > secnClient && sock == sockets.get(secnClient)) {
-            test[0] = true;
-            message(sock, sockets.get(firstClient));
-        }
-
-    }
-
-    private  void message(Socket sender, Socket reciever)  throws IOException {
+    private void message(Socket sender, Socket reciever)  throws IOException {
          PrintWriter out = new PrintWriter(reciever.getOutputStream(), true);
           BufferedReader in = new BufferedReader(new InputStreamReader(sender.getInputStream()));
 
 
         String recievedMsg;
 
+
         while ((recievedMsg = in.readLine()) != null) {
 
+             System.out.println("Dette er mld->" + recievedMsg + "<-");
 
-            String outMsg = recievedMsg;
-            out.println(outMsg);
-            System.out.println(recievedMsg);
+            if(recievedMsg.equals("[RequestingChat*OK]")) {
+               // out.println("[RequestingNEWChat*OK]");
+               // System.out.println("hei2..");
+
+
+                manageChat();
+
+
+            } else {
+                String outMsg = recievedMsg;
+                out.println(outMsg);
+                System.out.println("server sender dette" + recievedMsg);
+            }
 
 
 
         }
-        System.out.println("lego");
+
+
     }
 
     private void checkUserPassword() throws IOException, ClassNotFoundException{
@@ -201,29 +188,36 @@ public class ThreadServer extends Thread {
 
     }
 
-    private void manageChat() throws IOException{
+    private void manageChat() throws IOException {
 
-        String user1,user2;
-        Socket socket1 = null, socket2 = null;
+        String user2 = null;
+        Socket socket2 = null;
 
-        if (in.readLine().equals("[RequestingChat*OK]")){
-            user1 = in.readLine();
-            user2 = in.readLine();
-            for ( Users user : usersList){
-                if (user.username.equals(user1)){
-                    System.out.println("bruker1 :" + user.username);
 
-                    socket1 = user.socket;
-                }
-                 if (user.username.equals(user2)){
-                    System.out.println("bruker2 :" + user.username);
-                    socket2 = user.socket;
+
+        user2 = in.readLine();
+        if (user2.equals("[RequestingChat*OK]") || user2.equals("")) user2 = in.readLine();
+
+
+        System.out.println("user2: " + user2);
+
+        for (Users user : usersList) {
+
+
+            if (user.username.equals(user2)) {
+                System.out.println("bruker2: " + user.username);
+                socket2 = user.socket;
+
+
+                if (socket2 != null) {
+
+
+                    message(sock, socket2);
+                    message(socket2, sock);
+
                 }
             }
-            message(socket1,socket2);
-            message(socket2,socket1);
         }
-
     }
 
 }
