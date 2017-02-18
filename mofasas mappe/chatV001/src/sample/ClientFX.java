@@ -7,6 +7,7 @@ package sample;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.TextArea;
@@ -16,10 +17,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.net.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class ClientFX  extends Service<Void> {
     private Socket cliSocket;
@@ -27,12 +25,13 @@ public class ClientFX  extends Service<Void> {
     private BufferedReader inStream;
     ArrayList<String> users = new ArrayList<>();
     final ObservableList<String> observableUsers = FXCollections.observableArrayList();
+    ObservableMap<String,String> chatHistory = FXCollections.observableMap(new HashMap<>());
     boolean isClientOnline,loggedOn = false;
     String hostName;
     int portNumber;
     TextArea textArea;
     TextField textField;
-    String username,username2,password;
+    String username,username2,sender,password;
 
 
 
@@ -103,12 +102,16 @@ public class ClientFX  extends Service<Void> {
                     textField.setOnAction(event -> {
 
 
+
                             outStream.println(textField.getText());
-                            if (textArea.getText().isEmpty()) textArea.setText("You: " + textField.getText());
+                            if (!chatHistory.containsKey(username2))textArea.setText("You: " + textField.getText());
                             else textArea.setText(textArea.getText() + "\n"  + "You: " + textField.getText());
 
+                        chatHistory.put(username2,textArea.getText());
 
-                            textField.clear();
+
+
+                        textField.clear();
                         });
 
                     String listOfUsers;
@@ -119,12 +122,19 @@ public class ClientFX  extends Service<Void> {
 
                                 while ((listOfUsers = inStream.readLine()) != null && !listOfUsers.equals("[SendingListOfUsers*DONE]")) {
                                     users.add(listOfUsers);
+                                    if (!chatHistory.containsKey(username2))chatHistory.put(username2,"");
+
+
 
 
                                 }
                            Platform.runLater(() ->{
                                     observableUsers.clear();
                                     observableUsers.addAll(users);
+                                    if (observableUsers.contains(username))  observableUsers.remove(username);
+
+
+
 
                                 });
 
@@ -133,8 +143,19 @@ public class ClientFX  extends Service<Void> {
 
 
                             } else {
-                                if (textArea.getText().isEmpty()) textArea.setText(username2 + ": " + inLine);
-                                else textArea.setText(textArea.getText() + "\n" + username2 + ": " + inLine);
+                                sender = inLine;
+                                String message = inStream.readLine();
+                                String chat = "";
+
+                            if (chatHistory.get(sender) == null) chat += (sender + ": " + message);
+                            else chat += (chatHistory.get(sender)+ "\n" + sender + ": " + message);
+
+                                chatHistory.put(sender,chat);
+                                textArea.setText(chatHistory.get(sender));
+                                if (!sender.equals(username2)){
+                                    setConnectTo(sender);
+
+                                }
                             }
 
 
@@ -188,17 +209,22 @@ public class ClientFX  extends Service<Void> {
 
 
 
-        outStream.println("[RequestingChat*OK]");
+            outStream.println("[RequestingChat*OK]");
 
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        outStream.println(username2);
-        this.username2 = username2;
+            textArea.setDisable(false);
+            textArea.setVisible(true);
 
-      //  System.out.println("username: " + username + " username2: " + username2);
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            outStream.println(username2);
+            this.username2 = username2;
+
+            textArea.setText(chatHistory.get(username2));
+
+
 
 
     }

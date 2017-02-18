@@ -6,6 +6,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -77,8 +78,6 @@ public class Controller implements Initializable{
                 loginbutton.setDisable(true);
                 loginbutton.setVisible(false);
 
-                txtArea.setDisable(false);
-                txtArea.setVisible(true);
                 txtField.setDisable(false);
                 txtField.setVisible(true);
                 userlist.setDisable(false);
@@ -90,13 +89,14 @@ public class Controller implements Initializable{
 
                 userlist.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
+
                 userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>()
                 {
                     public void changed(ObservableValue<? extends String> observableval, String oldval, String newval)
                     {
+
                         String connectToThisUser = userlist.getSelectionModel().getSelectedItem();
-                        if (connectToThisUser != null && !connectToThisUser.equals("null") &&!connectToThisUser.equals("")) client.setConnectTo(connectToThisUser);
-                    }
+                        if (connectToThisUser != null && !connectToThisUser.equals("null") &&!connectToThisUser.equals("")) client.setConnectTo(connectToThisUser);}
                 });
 
 
