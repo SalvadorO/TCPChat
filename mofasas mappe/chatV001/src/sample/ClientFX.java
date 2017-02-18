@@ -12,6 +12,7 @@ import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.text.Text;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -31,15 +32,17 @@ public class ClientFX  extends Service<Void> {
     int portNumber;
     TextArea textArea;
     TextField textField;
+    Text startText;
     String username,username2,sender,password;
 
 
 
-    public ClientFX(String ipAdress, int port, TextField textField, TextArea textArea) {
+    public ClientFX(String ipAdress, int port, TextField textField, TextArea textArea, Text startText) {
         this.hostName = ipAdress;
         this.portNumber = port;
         this.textField = textField;
         this.textArea = textArea;
+        this.startText = startText;
 
         System.out.println("Client is up!");
 
@@ -129,9 +132,11 @@ public class ClientFX  extends Service<Void> {
 
                                 }
                            Platform.runLater(() ->{
-                                    observableUsers.clear();
-                                    observableUsers.addAll(users);
-                                    if (observableUsers.contains(username))  observableUsers.remove(username);
+                               observableUsers.clear();
+                               observableUsers.addAll(users);
+                               if (observableUsers.contains(username))  observableUsers.remove(username);
+                               areUsersOnline();
+
 
 
 
@@ -157,12 +162,6 @@ public class ClientFX  extends Service<Void> {
 
                                 }
                             }
-
-
-
-
-
-
 
 
                         }
@@ -205,14 +204,27 @@ public class ClientFX  extends Service<Void> {
         return loggedOn;
     }
 
+    public void areUsersOnline(){
+        if (observableUsers.isEmpty()) {
+            textArea.setVisible(false);
+            textArea.setDisable(true);
+            startText.setText("No users are online");
+            startText.setVisible(true);
+        } else {
+            startText.setVisible(false);
+            textArea.setVisible(true);
+
+        }
+
+    }
+
     public void setConnectTo(String username2) {
 
+        outStream.println("[RequestingChat*OK]");
+        startText.setVisible(false);
+        textArea.setDisable(false);
+        textArea.setVisible(true);
 
-
-            outStream.println("[RequestingChat*OK]");
-
-            textArea.setDisable(false);
-            textArea.setVisible(true);
 
             try {
                 Thread.sleep(200);

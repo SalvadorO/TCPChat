@@ -13,6 +13,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.awt.event.ActionEvent;
@@ -37,11 +38,14 @@ public class Controller implements Initializable{
     @FXML
     ListView<String> userlist;
 
+    @FXML
+    Text startText;
+
 
     public void startClient() {
 
 
-        client = new ClientFX("localhost", 5555,txtField,txtArea);
+        client = new ClientFX("localhost", 5555,txtField,txtArea,startText);
         client.setClientOnline(true);
 
 
@@ -80,6 +84,7 @@ public class Controller implements Initializable{
 
                 txtField.setDisable(false);
                 txtField.setVisible(true);
+                startText.setVisible(true);
                 userlist.setDisable(false);
                 userlist.setVisible(true);
 
@@ -112,10 +117,13 @@ public class Controller implements Initializable{
 
         txtArea.setDisable(true);
         txtArea.setVisible(false);
+        startText.setVisible(false);
         txtField.setDisable(true);
         txtField.setVisible(false);
         userlist.setDisable(true);
         userlist.setVisible(false);
+
+
 
 
         Main.getPrimaryStage().setOnCloseRequest(event -> {
