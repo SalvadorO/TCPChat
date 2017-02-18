@@ -4,10 +4,7 @@ import javafx.collections.ObservableMap;
 
 import java.net.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +19,7 @@ public class ThreadServer extends Thread {
     ArrayList<String> usersnames = new ArrayList<>();
     boolean[] test;
     Users user;
+    String myUsername;
     PrintWriter out;
     BufferedReader in;
 
@@ -58,7 +56,8 @@ public class ThreadServer extends Thread {
 
             sendUserList();
 
-            if (in.readLine().equals("[RequestingChat*OK]")) manageChat();
+            String g;
+            if ((g = in.readLine()) != null && g.equals("[RequestingChat*OK]")) manageChat();
 
 
             // or wait ...
@@ -75,7 +74,9 @@ public class ThreadServer extends Thread {
 
         } catch (ClassNotFoundException cs){
             cs.getCause();
-        } finally {
+        } catch(ConcurrentModificationException cm){
+            System.out.println("concurrent modexpetionz");
+        }finally{
             sockets.remove(sock);
             usersList.remove(user);
             usersnames.remove(user.username);
@@ -91,8 +92,8 @@ public class ThreadServer extends Thread {
 
 
     private void message(Socket sender, Socket reciever)  throws IOException {
-         PrintWriter out = new PrintWriter(reciever.getOutputStream(), true);
-          BufferedReader in = new BufferedReader(new InputStreamReader(sender.getInputStream()));
+        PrintWriter out = new PrintWriter(reciever.getOutputStream(), true);
+       BufferedReader in = new BufferedReader(new InputStreamReader(sender.getInputStream()));
 
 
         String recievedMsg;
@@ -101,6 +102,7 @@ public class ThreadServer extends Thread {
         while ((recievedMsg = in.readLine()) != null) {
 
              System.out.println("Dette er mld->" + recievedMsg + "<-");
+            System.out.println("my username is: " + myUsername);
 
             if(recievedMsg.equals("[RequestingChat*OK]")) {
                // out.println("[RequestingNEWChat*OK]");
@@ -110,15 +112,19 @@ public class ThreadServer extends Thread {
                 manageChat();
 
 
-            } else {
-                String outMsg = recievedMsg;
-                out.println(outMsg);
-                System.out.println("server sender dette" + recievedMsg);
-            }
+            } else
+
+                out.println(myUsername);
+                out.println(recievedMsg);
+                System.out.println("server sender dette: " + recievedMsg);
+
 
 
 
         }
+
+
+
 
 
     }
@@ -139,6 +145,7 @@ public class ThreadServer extends Thread {
 
                 usersList.add(user);
                 usersnames.add(user.username);
+                myUsername = user.username;
                 out.println("[LogInApproved*OK]");
                 System.out.println(usernamepassword);
                 break;
@@ -190,13 +197,8 @@ public class ThreadServer extends Thread {
 
     private void manageChat() throws IOException {
 
-        String user2 = null;
         Socket socket2 = null;
-
-
-
-        user2 = in.readLine();
-        if (user2.equals("[RequestingChat*OK]") || user2.equals("")) user2 = in.readLine();
+        String user2 = in.readLine();
 
 
         System.out.println("user2: " + user2);
@@ -209,15 +211,17 @@ public class ThreadServer extends Thread {
                 socket2 = user.socket;
 
 
-                if (socket2 != null) {
 
-
-                    message(sock, socket2);
-                    message(socket2, sock);
-
-                }
             }
+
         }
+        if (socket2 != null) {
+
+            message(sock, socket2);
+
+
+        }
+
     }
 
 }
