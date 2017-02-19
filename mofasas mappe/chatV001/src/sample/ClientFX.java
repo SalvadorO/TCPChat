@@ -106,8 +106,9 @@ public class ClientFX  extends Service<Void> {
 
 
 
+                            outStream.println("[SendingAMessage*OK]");
                             outStream.println(textField.getText());
-                            if (!chatHistory.containsKey(username2))textArea.setText("You: " + textField.getText());
+                            if (chatHistory.get(username2).equals(""))textArea.setText("You: " + textField.getText());
                             else textArea.setText(textArea.getText() + "\n"  + "You: " + textField.getText());
 
                         chatHistory.put(username2,textArea.getText());
@@ -135,13 +136,13 @@ public class ClientFX  extends Service<Void> {
                                observableUsers.clear();
                                observableUsers.addAll(users);
                                if (observableUsers.contains(username))  observableUsers.remove(username);
-                               areUsersOnline();
 
 
+                               areUsersOnline(observableUsers.isEmpty() || (sender != null && !observableUsers.contains(sender))
+                                       || (!observableUsers.contains(username2) && !chatHistory.get(username2).equals("") ));
 
+                           });
 
-
-                                });
 
                             } else if (inLine.equals("[RequestingNEWChat*OK]")){
 
@@ -150,12 +151,14 @@ public class ClientFX  extends Service<Void> {
                             } else {
                                 sender = inLine;
                                 String message = inStream.readLine();
-                                String chat = "";
+                                StringBuilder chat = new StringBuilder();
 
-                            if (chatHistory.get(sender) == null) chat += (sender + ": " + message);
-                            else chat += (chatHistory.get(sender)+ "\n" + sender + ": " + message);
 
-                                chatHistory.put(sender,chat);
+
+                                if (chatHistory.get(sender) == null || chatHistory.get(sender).equals("")) chat.append(sender + ": " + message);
+                            else chat.append(chatHistory.get(sender)+ "\n" + sender + ": " + message);
+
+                                chatHistory.put(sender,chat.toString());
                                 textArea.setText(chatHistory.get(sender));
                                 if (!sender.equals(username2)){
                                     setConnectTo(sender);
@@ -204,17 +207,19 @@ public class ClientFX  extends Service<Void> {
         return loggedOn;
     }
 
-    public void areUsersOnline(){
-        if (observableUsers.isEmpty()) {
+    public void areUsersOnline(boolean check){
+        if (check) {
             textArea.setVisible(false);
             textArea.setDisable(true);
-            startText.setText("No users are online");
+            startText.setText("user on the list is not available");
             startText.setVisible(true);
         } else {
             startText.setVisible(false);
             textArea.setVisible(true);
 
         }
+
+        if (sender != null && !observableUsers.contains(sender)) sender = null;
 
     }
 
