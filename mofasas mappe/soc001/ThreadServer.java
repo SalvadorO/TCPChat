@@ -92,39 +92,32 @@ public class ThreadServer extends Thread {
 
 
     private void message(Socket sender, Socket reciever)  throws IOException {
-        PrintWriter out = new PrintWriter(reciever.getOutputStream(), true);
-       BufferedReader in = new BufferedReader(new InputStreamReader(sender.getInputStream()));
+       PrintWriter out = new PrintWriter(reciever.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(sender.getInputStream()));
 
 
-        String recievedMsg;
+        String recievedText;
 
 
-        while ((recievedMsg = in.readLine()) != null) {
-
-             System.out.println("Dette er mld->" + recievedMsg + "<-");
+        while ((recievedText = in.readLine()) != null) {
+            System.out.println("Dette er mld->" + recievedText + "<-");
             System.out.println("my username is: " + myUsername);
 
-            if(recievedMsg.equals("[RequestingChat*OK]")) {
-               // out.println("[RequestingNEWChat*OK]");
-               // System.out.println("hei2..");
-
+            if (recievedText.equals("[RequestingChat*OK]")) {
 
                 manageChat();
 
 
-            } else
-
+            } else if (recievedText.equals("[SendingAMessage*OK]")) {
+                String message = in.readLine();
                 out.println(myUsername);
-                out.println(recievedMsg);
-                System.out.println("server sender dette: " + recievedMsg);
-
-
-
+                out.println(message);
+                System.out.println("server sender dette: " + message);
+            }
 
         }
-
-
-
+        sock.close();
+        in.close();
 
 
     }
