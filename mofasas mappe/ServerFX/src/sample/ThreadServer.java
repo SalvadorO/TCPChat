@@ -146,15 +146,39 @@ public class ThreadServer extends Service<Void>
 
 
 
-        String usernamepassword;
+        String signInLine;
 
-        while ((usernamepassword = in.readLine()) != null) {
+        while ((signInLine = in.readLine()) != null) {
 
-
-            String username = extractUsername(usernamepassword);
+            String username = extractUsername(signInLine);
             user = new Users(sock,username);
 
-            if (user.manageUser(usernamepassword,"login")){
+            if (signInLine.equals("[CreateNewUser*OK]")){
+               String usernamepasswd = in.readLine();
+
+                username = extractUsername(usernamepasswd);
+                user.username = username;
+                if (user.manageUser(username,"checkExistingUser")){
+                    System.out.println("Bruker allrede eksisterer!");
+                    out.println("[CreateNewUser*ERROR]");
+                } else {
+                    System.out.println("EY det funka å laggd en ny bruker: " + usernamepasswd);
+                    user.writeToFile(usernamepasswd);
+
+                    listOfOnlineUsers.add(user);
+                    myUsername = user.username;
+                    onlineUsernames.add(myUsername);
+                    offlineUsernames.remove(myUsername);
+
+                    out.println("[LogInApproved*OK]");
+                    break;
+                }
+
+
+            }
+
+
+           else if (user.manageUser(signInLine,"login")){
 
                 listOfOnlineUsers.add(user);
                 myUsername = user.username;
@@ -162,7 +186,7 @@ public class ThreadServer extends Service<Void>
                 offlineUsernames.remove(myUsername);
 
                 out.println("[LogInApproved*OK]");
-                System.out.println(usernamepassword);
+                System.out.println(signInLine);
                 break;
 
             } else

@@ -24,7 +24,7 @@ public class Server  extends Task<Void> {
     ArrayList<String> usersOnline = new ArrayList<>();
     ArrayList<String> usersOffline = new ArrayList<>();
     ArrayList<String> usersBusy = new ArrayList<>();
-    private java.net.URL URL = getClass().getResource("passwd.txt");
+    private java.net.URL URL = getClass().getResource("ServerFX/../../passwd.txt");
 
 
 
@@ -73,7 +73,7 @@ public class Server  extends Task<Void> {
 
         Pattern comp = Pattern.compile("(\\w+)[:](\\w+)");
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(URL.getPath()));
+            BufferedReader reader = new BufferedReader(new FileReader("passwd.txt"));
             String line;
             while((line = reader.readLine()) != null){
                 Matcher matcher = comp.matcher(line);

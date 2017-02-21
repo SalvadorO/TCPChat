@@ -4,13 +4,14 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by Mustafe on 20.02.2017.
- */
+
 
 public class Users implements Serializable {
     public Socket socket;
@@ -21,7 +22,8 @@ public class Users implements Serializable {
     public OutputStream userOutStream;
     private java.net.URL URL = getClass().getResource("passwd.txt");
     private String PATH = URL.getPath();
-    private ArrayList<String> listOfUsers;
+    Pattern comp = Pattern.compile("(\\w+)[:](\\w+)");
+
 
 
 
@@ -29,7 +31,6 @@ public class Users implements Serializable {
         this.socket = socket;
         this.username = username;
         this.status = "OFFLINE";
-        listOfUsers = new ArrayList<>();
         userIP = socket.getInetAddress();
         userPort = socket.getPort();
         userOutStream = socket.getOutputStream();
@@ -50,18 +51,19 @@ public class Users implements Serializable {
         this.status = status;
     }
 
-    public boolean manageUser(String info, String key){
+    public boolean manageUser(String info, String key) throws IOException{
         if(key.equals("login")){
             if( checkLogin(info))return true;
 
+        }else if (key.equals("checkExistingUser")){
+            if (usernameExists(info))return true;
         }
         return false;
     }
 
     private boolean checkLogin(String string){
-        Pattern comp = Pattern.compile("(\\w+)[:](\\w+)");
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(PATH));
+            BufferedReader reader = new BufferedReader(new FileReader("passwd.txt"));
             String line;
             while((line = reader.readLine()) != null){
                 Matcher matcher = comp.matcher(line);
@@ -80,30 +82,28 @@ public class Users implements Serializable {
 
         return false;
     }
-    @Override
-    public String toString(){
-        Pattern comp = Pattern.compile("(\\w+)[:](\\w+)");
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(PATH));
-            String line;
-            while((line = reader.readLine()) != null){
-                Matcher matcher = comp.matcher(line);
-                while(matcher.find() ) {
-                    listOfUsers.add(line);
-                }
+
+    boolean usernameExists(String string) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader("passwd.txt"));
+        String line;
+        while((line = reader.readLine()) != null){
+            Matcher matcher = comp.matcher(line);
+            if(matcher.find()) {
+                if(matcher.group(1).equals(string))return true;
             }
-            reader.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+
         }
-
-        return listOfUsers.toString();
-
+        reader.close();
+        return false;
     }
 
 
 
-}
+    void writeToFile(String string) throws IOException {
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("passwd.txt", true)));
+        out.println(string);
+        out.close();
 
+    }
+
+}
