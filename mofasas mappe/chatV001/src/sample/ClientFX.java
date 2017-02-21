@@ -15,7 +15,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -24,8 +23,13 @@ public class ClientFX  extends Service<Void> {
     private Socket cliSocket;
     private PrintStream outStream;
     private BufferedReader inStream;
-    ArrayList<String> users = new ArrayList<>();
-    final ObservableList<String> observableUsers = FXCollections.observableArrayList();
+    ArrayList<String> onlineUsers = new ArrayList<>();
+    ArrayList<String> offlineUsers = new ArrayList<>();
+    ArrayList<String> busyUsers = new ArrayList<>();
+    final ObservableList<String> observableOnline = FXCollections.observableArrayList();
+    final ObservableList<String> observableOffline = FXCollections.observableArrayList();
+    final ObservableList<String> observableBusy = FXCollections.observableArrayList();
+
     ObservableMap<String,String> chatHistory = FXCollections.observableMap(new HashMap<>());
     boolean isClientOnline,loggedOn = false;
     String hostName;
@@ -106,68 +110,76 @@ public class ClientFX  extends Service<Void> {
 
 
 
-                            outStream.println("[SendingAMessage*OK]");
-                            outStream.println(textField.getText());
-                            if (chatHistory.get(username2).equals(""))textArea.setText("You: " + textField.getText());
-                            else textArea.setText(textArea.getText() + "\n"  + "You: " + textField.getText());
+                        outStream.println("[SendingAMessage*OK]");
+                        outStream.println(textField.getText());
+                        if (chatHistory.get(username2).equals(""))textArea.setText("You: " + textField.getText());
+                        else textArea.setText(textArea.getText() + "\n"  + "You: " + textField.getText());
 
                         chatHistory.put(username2,textArea.getText());
 
 
 
+                        System.out.println("ONLINE: " + onlineUsers.toString() + " OFFLINE: " + offlineUsers.toString() + " BUSY: " + busyUsers.toString());
                         textField.clear();
-                        });
+                    });
 
                     String listOfUsers;
-                        while ((inLine = inStream.readLine()) != null) {
+                    while ((inLine = inStream.readLine()) != null) {
 
-                            if (inLine.equals("[SendingListOfUsers*OK]")) {
-                                users.clear();
+                        if (inLine.equals("[SendingListOfUsers*OK]")) {
+                            onlineUsers.clear();
+                            offlineUsers.clear();
+                            busyUsers.clear();
 
-                                while ((listOfUsers = inStream.readLine()) != null && !listOfUsers.equals("[SendingListOfUsers*DONE]")) {
-                                    users.add(listOfUsers);
-                                    if (!chatHistory.containsKey(username2))chatHistory.put(username2,"");
-
-
+                            recieveLists();
 
 
-                                }
-                           Platform.runLater(() ->{
-                               observableUsers.clear();
-                               observableUsers.addAll(users);
-                               if (observableUsers.contains(username))  observableUsers.remove(username);
+                            Platform.runLater(() ->{
 
+                                observableOffline.clear();
+                                observableOffline.addAll(offlineUsers);
 
-                               areUsersOnline(observableUsers.isEmpty() || (sender != null && !observableUsers.contains(sender))
-                                       || (!observableUsers.contains(username2) && !chatHistory.get(username2).equals("") ));
+                                observableOnline.clear();
+                                observableOnline.addAll(onlineUsers);
 
-                           });
-
-
-                            } else if (inLine.equals("[RequestingNEWChat*OK]")){
+                                observableBusy.clear();
+                                observableBusy.addAll(busyUsers);
 
 
 
-                            } else {
-                                sender = inLine;
-                                String message = inStream.readLine();
-                                StringBuilder chat = new StringBuilder();
+
+                                if (observableOnline.contains(username))  observableOnline.remove(username);
+
+
+                                areUsersOnline(observableOnline.isEmpty() || (sender != null && !observableOnline.contains(sender))
+                                        || (!observableOnline.contains(username2) && !chatHistory.get(username2).equals("") ));
+
+                            });
+
+
+                        } else if (inLine.equals("[RequestingNEWChat*OK]")){
+
+
+                        } else {
+                            sender = inLine;
+                            String message = inStream.readLine();
+                            StringBuilder chat = new StringBuilder();
 
 
 
-                                if (chatHistory.get(sender) == null || chatHistory.get(sender).equals("")) chat.append(sender + ": " + message);
+                            if (chatHistory.get(sender) == null || chatHistory.get(sender).equals("")) chat.append(sender + ": " + message);
                             else chat.append(chatHistory.get(sender)+ "\n" + sender + ": " + message);
 
-                                chatHistory.put(sender,chat.toString());
-                                textArea.setText(chatHistory.get(sender));
-                                if (!sender.equals(username2)){
-                                    setConnectTo(sender);
+                            chatHistory.put(sender,chat.toString());
+                            textArea.setText(chatHistory.get(sender));
+                            if (!sender.equals(username2)){
+                                setConnectTo(sender);
 
-                                }
                             }
-
-
                         }
+
+
+                    }
 
                     System.out.println("call ferdig");
 
@@ -219,7 +231,7 @@ public class ClientFX  extends Service<Void> {
 
         }
 
-        if (sender != null && !observableUsers.contains(sender)) sender = null;
+        if (sender != null && !observableOnline.contains(sender)) sender = null;
 
     }
 
@@ -231,24 +243,69 @@ public class ClientFX  extends Service<Void> {
         textArea.setVisible(true);
 
 
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        outStream.println(username2);
+        this.username2 = username2;
+
+        textArea.setText(chatHistory.get(username2));
+
+
+
+
+    }
+
+    public ObservableList<String> getObservableOnline() {
+        return observableOnline;
+    }
+
+    private void recieveLists() throws IOException{
+
+
+        String line = inStream.readLine();
+
+        if (line.equals("[SendingOnlineList*OK]")) {
+
+            String listOfOnline;
+            while ((listOfOnline = inStream.readLine()) != null && !listOfOnline.equals("[SendingOfflineList*OK]")) {
+                onlineUsers.add(listOfOnline);
+
+                if (!chatHistory.containsKey(username2))chatHistory.put(username2,"");
+
+
             }
-            outStream.println(username2);
-            this.username2 = username2;
+            line = listOfOnline;
 
-            textArea.setText(chatHistory.get(username2));
+        }  if (line.equals("[SendingOfflineList*OK]")) {
+
+            String listOfOffline;
+            while ((listOfOffline = inStream.readLine()) != null && !listOfOffline.equals("[SendingBusyList*OK]")) {
+                offlineUsers.add(listOfOffline);
+
+            }
+            line = listOfOffline;
+
+
+        }  if (line.equals("[SendingBusyList*OK]")){
+            String listOfBusy;
+            while ((listOfBusy = inStream.readLine()) != null && !listOfBusy.equals("[SendingListOfUsers*DONE]")) {
+                busyUsers.add(listOfBusy);
+
+            }
 
 
 
-
+        }
     }
 
-    public ObservableList<String> getObservableUsers() {
-        return observableUsers;
+    public ObservableList<String> getObservableOffline() {
+        return observableOffline;
     }
 
-
+    public ObservableList<String> getObservableBusy() {
+        return observableBusy;
+    }
 }
