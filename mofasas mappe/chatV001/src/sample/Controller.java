@@ -20,15 +20,17 @@ public class Controller implements Initializable{
     public TextField txtField,username,passwd;
 
     @FXML
-    public TextArea txtArea;
+    public TextArea txtArea,clientInfo;
 
     @FXML
-    Button loginbutton;
+    Button loginbutton, buttonCreateUser;
 
-  @FXML  ListView<String> onlinelist,offlinelist,busylist;
+    @FXML  ListView<String> onlinelist,offlinelist,busylist;
 
     @FXML
-    Text startText,busyText,onlineText,offlineText,passwordText,usernameText;
+    Text startText,busyText,onlineText,offlineText,passwordText,usernameText,welcomeText;
+
+    @FXML SplitMenuButton statusButton;
 
 
 
@@ -41,93 +43,120 @@ public class Controller implements Initializable{
         client = new ClientFX("localhost", 5555,txtField,txtArea,startText);
         client.setClientOnline(true);
 
-
-
-
-
     }
 
+    private void whenSignedIn(boolean isSignedIn){
+        if (isSignedIn) {
 
-    @SuppressWarnings("unchecked")
+            username.setVisible(false);
+            passwd.setVisible(false);
+            username.setDisable(true);
+            passwd.setDisable(true);
+            loginbutton.setDisable(true);
+            loginbutton.setVisible(false);
+            buttonCreateUser.setDisable(true);
+            buttonCreateUser.setVisible(false);
+
+            txtField.setDisable(false);
+            txtField.setVisible(true);
+
+            onlineText.setVisible(true);
+            offlineText.setVisible(true);
+            busyText.setVisible(true);
+            startText.setVisible(true);
+            usernameText.setVisible(false);
+            passwordText.setVisible(false);
+            welcomeText.setText("Welcome, " + client.username + "!");
+            welcomeText.setVisible(true);
+
+            clientInfo.setDisable(false);
+            clientInfo.setText("IP Address: " + client.getCliSocket().getInetAddress() + "\n"
+                + "Port Number: " + client.getCliSocket().getPort());
+            clientInfo.setVisible(true);
+            clientInfo.setEditable(false);
+
+
+
+            statusButton.setDisable(false);
+            statusButton.setVisible(true);
+            onlinelist.setDisable(false);
+            onlinelist.setVisible(true);
+            offlinelist.setVisible(true);
+            busylist.setVisible(true);
+
+
+            onlinelist.setItems(client.getObservableOnline());
+            offlinelist.setItems(client.getObservableOffline());
+            busylist.setItems(client.getObservableBusy());
+
+
+            onlinelist.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            offlinelist.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            busylist.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+
+            onlinelist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+                public void changed(ObservableValue<? extends String> observableval, String oldval, String newval) {
+
+
+                    String connectToThisUser = onlinelist.getSelectionModel().getSelectedItem();
+
+
+                    if (connectToThisUser != null && !connectToThisUser.equals("null") && !connectToThisUser.equals("")) {
+                        client.setConnectTo(connectToThisUser);
+                    }
+                }
+            });
+        }
+    }
+
     @FXML public void loginserver(){
 
 
 
 
 
-            startClient();
-            client.setPassword(passwd.getText());
-            client.setUsername(username.getText());
-            passwd.clear();
-            username.clear();
+        startClient();
+        client.setPassword(passwd.getText());
+        client.setUsername(username.getText());
+        passwd.clear();
+        username.clear();
 
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if (client.isLoggedOn()) {
-
-                username.setVisible(false);
-                passwd.setVisible(false);
-                username.setDisable(true);
-                passwd.setDisable(true);
-                loginbutton.setDisable(true);
-                loginbutton.setVisible(false);
-
-                txtField.setDisable(false);
-                txtField.setVisible(true);
-
-                onlineText.setVisible(true);
-                offlineText.setVisible(true);
-                busyText.setVisible(true);
-                startText.setVisible(true);
-                usernameText.setVisible(false);
-                passwordText.setVisible(false);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
 
-                onlinelist.setDisable(false);
-                onlinelist.setVisible(true);
-                offlinelist.setVisible(true);
-                busylist.setVisible(true);
+        whenSignedIn(client.isLoggedOn());
 
-
-
-
-                onlinelist.setItems(client.getObservableOnline());
-                offlinelist.setItems(client.getObservableOffline());
-                busylist.setItems(client.getObservableBusy());
-
-
-                onlinelist.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-                offlinelist.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-                busylist.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-
-
-
-                onlinelist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>()
-                {
-                    public void changed(ObservableValue<? extends String> observableval, String oldval, String newval)
-                    {
-
-
-                        String connectToThisUser = onlinelist.getSelectionModel().getSelectedItem();
-
-
-
-                        if (connectToThisUser != null && !connectToThisUser.equals("null") &&!connectToThisUser.equals("")) {
-                            client.setConnectTo(connectToThisUser);
-                        }}
-                });
 
 
     }
 
 
+    @FXML public void createNewUser(){
+
+        startClient();
+        client.setPassword(passwd.getText());
+        client.setUsername(username.getText());
+        passwd.clear();
+        username.clear();
+
+        client.setCreatingUser(true);
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+        whenSignedIn(client.isLoggedOn());
+
+
     }
-
-
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -140,6 +169,14 @@ public class Controller implements Initializable{
         onlineText.setVisible(false);
         offlineText.setVisible(false);
         busyText.setVisible(false);
+        welcomeText.setVisible(false);
+
+        statusButton.setDisable(true);
+        statusButton.setVisible(false);
+        clientInfo.setDisable(true);
+        clientInfo.setVisible(false);
+
+
         txtField.setDisable(true);
         txtField.setVisible(false);
         onlinelist.setDisable(true);
@@ -156,7 +193,7 @@ public class Controller implements Initializable{
         Main.getPrimaryStage().setOnCloseRequest(event -> {
             try {
 
-               if (client != null) client.getCliSocket().close();
+                if (client != null) client.getCliSocket().close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -31,7 +31,7 @@ public class ClientFX  extends Service<Void> {
     final ObservableList<String> observableBusy = FXCollections.observableArrayList();
 
     ObservableMap<String,String> chatHistory = FXCollections.observableMap(new HashMap<>());
-    boolean isClientOnline,loggedOn = false;
+    boolean isClientOnline,loggedOn = false,isCreatingUser = false;
     String hostName;
     int portNumber;
     TextArea textArea;
@@ -88,6 +88,9 @@ public class ClientFX  extends Service<Void> {
                     while (!loggedOn){
 
                         if (!username.isEmpty() && !password.isEmpty()) {
+                            if (isCreatingUser){
+                                outStream.println("[CreateNewUser*OK]");
+                            }
                             outStream.println(username + ":" + password);
                         }
 
@@ -97,6 +100,8 @@ public class ClientFX  extends Service<Void> {
                                 break;
                             } else if (inLine.equals("[LogInNotApproved*OK]")){
                                 System.out.println("WRONG PASSORD OR USERNAME");
+                            } else if (inLine.equals("[CreateNewUser*OK]")){
+                                System.out.println("USER ALREADY EXSISTS");
                             }
 
 
@@ -222,12 +227,15 @@ public class ClientFX  extends Service<Void> {
     public void areUsersOnline(boolean check){
         if (check) {
             textArea.setVisible(false);
+            textField.setVisible(false);
             textArea.setDisable(true);
             startText.setText("user on the list is not available");
             startText.setVisible(true);
         } else {
+            textField.setVisible(true);
             startText.setVisible(false);
             textArea.setVisible(true);
+            textArea.setDisable(false);
 
         }
 
@@ -307,5 +315,9 @@ public class ClientFX  extends Service<Void> {
 
     public ObservableList<String> getObservableBusy() {
         return observableBusy;
+    }
+
+    public void setCreatingUser(boolean creatingUser) {
+        isCreatingUser = creatingUser;
     }
 }
