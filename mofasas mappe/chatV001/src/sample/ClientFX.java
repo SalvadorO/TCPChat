@@ -226,16 +226,16 @@ public class ClientFX  extends Service<Void> {
 
     public void areUsersOnline(boolean check){
         if (check) {
-            textArea.setVisible(false);
-            textField.setVisible(false);
             textArea.setDisable(true);
+            textArea.setVisible(false);
+            textField.setDisable(true);
             startText.setText("user on the list is not available");
             startText.setVisible(true);
         } else {
-            textField.setVisible(true);
             startText.setVisible(false);
             textArea.setVisible(true);
             textArea.setDisable(false);
+
 
         }
 
@@ -249,6 +249,8 @@ public class ClientFX  extends Service<Void> {
         startText.setVisible(false);
         textArea.setDisable(false);
         textArea.setVisible(true);
+        textField.setDisable(false);
+
 
 
         try {

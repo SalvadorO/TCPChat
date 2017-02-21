@@ -57,7 +57,6 @@ public class Controller implements Initializable{
             buttonCreateUser.setDisable(true);
             buttonCreateUser.setVisible(false);
 
-            txtField.setDisable(false);
             txtField.setVisible(true);
 
             onlineText.setVisible(true);
