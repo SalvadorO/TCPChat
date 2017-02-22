@@ -42,8 +42,7 @@
         <SplitMenuButton fx:id="statusButton" layoutX="245.0" layoutY="107.0" mnemonicParsing="false" prefWidth="109.0" text="Status">
           <items>
             <MenuItem mnemonicParsing="false"  text="Busy" fx:id="busyButton" />
-            <MenuItem mnemonicParsing="false" onAction="#setStatusOnline" text="Online" />
-            <MenuItem mnemonicParsing="false" onAction="#setStatusDisconnect" text="Disconnect" />
+            <MenuItem mnemonicParsing="false" text="Online" fx:id="onlineButton"/>
           </items>
         </SplitMenuButton>
       </children>

@@ -33,7 +33,7 @@ public class ClientFX  extends Service<Void> {
 
     ObservableMap<String,String> chatHistory = FXCollections.observableMap(new HashMap<>());
     boolean isClientOnline,loggedOn = false,isCreatingUser = false;
-    private MenuItem busyButton;
+    private MenuItem busyButton,onlineButton;
     String hostName;
     int portNumber;
     TextArea textArea;
@@ -43,13 +43,14 @@ public class ClientFX  extends Service<Void> {
 
 
 
-    public ClientFX(String ipAdress, int port, TextField textField, TextArea textArea, Text startText, MenuItem busybutton) {
+    public ClientFX(String ipAdress, int port, TextField textField, TextArea textArea, Text startText, MenuItem busyButton, MenuItem onlineButton) {
         this.hostName = ipAdress;
         this.portNumber = port;
         this.textField = textField;
         this.textArea = textArea;
         this.startText = startText;
-        this.busyButton = busybutton;
+        this.busyButton = busyButton;
+        this.onlineButton = onlineButton;
 
         System.out.println("Client is up!");
 
@@ -109,10 +110,25 @@ public class ClientFX  extends Service<Void> {
 
 
                         }
+                        outStream.flush();
 
                     }
 
-                    busyButton.setOnAction(event1 -> outStream.println("[SetClientBusy*OK]"));
+                    onlineButton.setOnAction(event -> {
+                        outStream.println("[SetClientOnline*OK]");
+                        textArea.setVisible(true);
+                        textField.setVisible(true);
+                       startText.setText("");
+                        startText.setVisible(false);
+                    });
+                    busyButton.setOnAction(event1 ->{
+                        outStream.println("[SetClientBusy*OK]");
+                        textArea.setVisible(false);
+                        startText.setText("Status: BUSY");
+
+                        textField.setVisible(false);
+                        startText.setVisible(true);
+                    });
 
 
                     textField.setOnAction(event -> {
@@ -127,8 +143,6 @@ public class ClientFX  extends Service<Void> {
                         chatHistory.put(username2,textArea.getText());
 
 
-
-                        System.out.println("ONLINE: " + onlineUsers.toString() + " OFFLINE: " + offlineUsers.toString() + " BUSY: " + busyUsers.toString());
                         textField.clear();
                     });
 
@@ -158,6 +172,7 @@ public class ClientFX  extends Service<Void> {
 
 
                                 if (observableOnline.contains(username))  observableOnline.remove(username);
+                                if (observableBusy.contains(username)) observableBusy.remove(username);
 
 
                                 areUsersOnline(observableOnline.isEmpty() || (sender != null && !observableOnline.contains(sender))
@@ -166,10 +181,7 @@ public class ClientFX  extends Service<Void> {
                             });
 
 
-                        } else if (inLine.equals("[RequestingNEWChat*OK]")){
-
-
-                        } else {
+                        }  else {
                             sender = inLine;
                             String message = inStream.readLine();
                             StringBuilder chat = new StringBuilder();
@@ -229,19 +241,31 @@ public class ClientFX  extends Service<Void> {
     }
 
     public void areUsersOnline(boolean check){
-        if (check) {
+
+        if (check){
+
             textArea.setDisable(true);
             textArea.setVisible(false);
             textField.setDisable(true);
+
             startText.setText("user on the list is not online");
             startText.setVisible(true);
         } else {
+
             startText.setVisible(false);
             textArea.setVisible(true);
             textArea.setDisable(false);
 
 
+
+
         }
+        if (busyUsers.contains(username)) {
+            startText.setText("Status: BUSY");
+            startText.setVisible(true);
+            textArea.setVisible(false);
+        }
+
 
         if (sender != null && !observableOnline.contains(sender)) sender = null;
 

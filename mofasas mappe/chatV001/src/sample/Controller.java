@@ -32,7 +32,7 @@ public class Controller implements Initializable{
 
     @FXML SplitMenuButton statusButton;
 
-    @FXML MenuItem busyButton;
+    @FXML MenuItem busyButton,onlineButton;
 
 
 
@@ -42,7 +42,7 @@ public class Controller implements Initializable{
     public void startClient() {
 
 
-        client = new ClientFX("localhost", 5555,txtField,txtArea,startText, busyButton);
+        client = new ClientFX("localhost", 5555,txtField,txtArea,startText,busyButton, onlineButton);
         client.setClientOnline(true);
 
     }
@@ -103,6 +103,7 @@ public class Controller implements Initializable{
                     String connectToThisUser = onlinelist.getSelectionModel().getSelectedItem();
 
 
+
                     if (connectToThisUser != null && !connectToThisUser.equals("null") && !connectToThisUser.equals("")) {
                         client.setConnectTo(connectToThisUser);
                     }
@@ -126,24 +127,6 @@ public class Controller implements Initializable{
         }
 
         whenSignedIn(client.isLoggedOn());
-
-    }
-
-    @FXML public void setStatusOnline(){
-
-        if (client.getCliSocket().isClosed()) loginserver();
-
-    }
-
-
-    @FXML public  void setStatusDisconnect(){
-
-        try {
-            client.getCliSocket().close();
-            statusButton.setText("Disconnected");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
     }
 
