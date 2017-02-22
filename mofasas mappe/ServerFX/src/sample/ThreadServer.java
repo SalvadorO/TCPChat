@@ -66,31 +66,27 @@ public class ThreadServer extends Service<Void>
 
                 try {
 
+                    //Creating a writer and reader for the server socket.
                     out = new PrintWriter(sock.getOutputStream(), true);
                     in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
+                    //Checking username and password
                     checkUserPassword();
 
+                    //Sending lists of users and their states
                     sendUserList();
 
-                    String g;
-                    if ((g = in.readLine()) != null && g.equals("[RequestingChat*OK]")) manageChat();
+                    // recieving messages from clients (chat, change in state etc.)
+                    String firstLine = in.readLine();
+                    firstLine = setClientState(firstLine);
+                    if ((firstLine != null && firstLine.equals("[RequestingChat*OK]"))) manageChat();
 
-
-
-
-                    // or wait ...
+                    // clients who are connected but not in a conversation
                     while (isSocketConnected(sock)){
 
-                        if (g  != null && g.equals("[SetClientBusy*OK]")) {
-                            setClientBusy();
-                            g = "";
-                        }
-
-                        Thread.sleep(100);
+                        Thread.sleep(1);
 
                     }
-
 
                 } catch (IOException e) {
                     System.out.println(e + " nei det er en IOEXEPTION");
@@ -105,7 +101,8 @@ public class ThreadServer extends Service<Void>
 
 
                     listOfOnlineUsers.remove(user);
-                    onlineUsernames.remove(user.username);
+                    onlineUsernames.remove(myUsername);
+                    if (busyUsernames.contains(myUsername)) busyUsernames.remove(myUsername);
                     offlineUsernames.add(user.username);
 
                     System.out.println("sock er closed");
@@ -131,25 +128,47 @@ public class ThreadServer extends Service<Void>
             System.out.println("Dette er mld->" + recievedText + "<-");
             System.out.println("my username is: " + myUsername);
 
-            if (recievedText.equals("[RequestingChat*OK]")) {
-
-                manageChat();
-
-
-            } else if (recievedText.equals("[SendingAMessage*OK]")) {
-                String message = in.readLine();
-                out.println(myUsername);
-                out.println(message);
-                System.out.println("server sender dette: " + message);
-            } else if (recievedText.equals("[SetClientBusy*OK]")){
-                setClientBusy();
+            switch (recievedText){
+                case "[RequestingChat*OK]" :  manageChat();
+                    break;
+                case "[SendingAMessage*OK]" : {
+                    String message = in.readLine();
+                    out.println(myUsername);
+                    out.println(message);
+                    System.out.println("server sender dette: " + message);
+                    break;
+                }
+                case "[SetClientBusy*OK]" : setClientBusy();
+                    break;
+                case "[SetClientOnline*OK]" : setClientOnline();
+                    break;
             }
-
         }
         sock.close();
         in.close();
 
 
+    }
+
+
+    private String setClientState( String firstLine) throws IOException, InterruptedException{
+        while (true){
+
+            if (firstLine != null) System.out.println("g: " + firstLine);
+            if (firstLine != null && firstLine.contains("SetClientOnline*OK")) {
+                setClientOnline();
+                firstLine = "";
+            }
+            else if (firstLine != null && firstLine.contains("SetClientBusy*OK")){
+                setClientBusy();
+                firstLine = "";
+            } else return firstLine;
+
+            firstLine = in.readLine();
+            Thread.sleep(1);
+
+
+        }
     }
 
     private void checkUserPassword() throws IOException, ClassNotFoundException{
@@ -299,8 +318,19 @@ public class ThreadServer extends Service<Void>
     }
 
     private void setClientBusy(){
-        onlineUsernames.remove(myUsername);
-        offlineUsernames.remove(myUsername);
-        busyUsernames.add(myUsername);
+        if (onlineUsernames.contains(myUsername)){
+            onlineUsernames.remove(myUsername);
+            offlineUsernames.remove(myUsername);
+            busyUsernames.add(myUsername);
+        }
+
+    }
+
+    private void setClientOnline(){
+        if (busyUsernames.contains(myUsername)){
+            busyUsernames.remove(myUsername);
+            onlineUsernames.add(myUsername);
+        }
+
     }
 }
