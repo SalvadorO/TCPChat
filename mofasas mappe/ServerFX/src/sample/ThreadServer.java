@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.scene.control.PasswordField;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -201,6 +202,7 @@ public class ThreadServer extends Service<Void>
 
                     out.println("[LogInApproved*OK]");
                     break;
+
                 }
 
 
@@ -208,6 +210,8 @@ public class ThreadServer extends Service<Void>
 
 
            else if (user.manageUser(signInLine,"login")){
+                
+
 
                 if (onlineUsernames.contains(user.username)){
                     out.println("[UserIsOnline*ERROR]");
