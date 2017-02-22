@@ -64,7 +64,7 @@ public class ClientFX  extends Service<Void> {
         } catch (UnknownHostException e) {
             System.out.println("Unknown host!");
         } catch (IOException e) {
-            alertDialogs("Connection Error","Can not connect to server");
+            alertDialogs("Connection Error","Can not connect to server.");
         }
 
 
@@ -99,6 +99,7 @@ public class ClientFX  extends Service<Void> {
                         }
 
                         while ((inLine = inStream.readLine()) != null) {
+                            
                             if (inLine.equals("[LogInApproved*OK]")){
                                 loggedOn = true;
                                 break;

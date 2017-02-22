@@ -17,7 +17,10 @@ public class Controller implements Initializable{
     ClientFX client;
 
     @FXML
-    public TextField txtField,username,passwd;
+    public TextField txtField,username;
+
+    @FXML
+    public PasswordField passwd;
 
     @FXML
     public TextArea txtArea,clientInfo;
