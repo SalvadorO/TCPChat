@@ -77,9 +77,17 @@ public class ThreadServer extends Service<Void>
                     if ((g = in.readLine()) != null && g.equals("[RequestingChat*OK]")) manageChat();
 
 
+
+
                     // or wait ...
                     while (isSocketConnected(sock)){
-                        Thread.sleep(1);
+
+                        if (g  != null && g.equals("[SetClientBusy*OK]")) {
+                            setClientBusy();
+                            g = "";
+                        }
+
+                        Thread.sleep(100);
 
                     }
 
@@ -133,6 +141,8 @@ public class ThreadServer extends Service<Void>
                 out.println(myUsername);
                 out.println(message);
                 System.out.println("server sender dette: " + message);
+            } else if (recievedText.equals("[SetClientBusy*OK]")){
+                setClientBusy();
             }
 
         }
@@ -284,5 +294,13 @@ public class ThreadServer extends Service<Void>
 
         }
 
+
+
+    }
+
+    private void setClientBusy(){
+        onlineUsernames.remove(myUsername);
+        offlineUsernames.remove(myUsername);
+        busyUsernames.add(myUsername);
     }
 }
