@@ -209,6 +209,12 @@ public class ThreadServer extends Service<Void>
 
            else if (user.manageUser(signInLine,"login")){
 
+                if (onlineUsernames.contains(user.username)){
+                    out.println("[UserIsOnline*ERROR]");
+                    System.out.println("aredde logged");
+                    break;
+                }
+
                 listOfOnlineUsers.add(user);
                 myUsername = user.username;
                 onlineUsernames.add(myUsername);
