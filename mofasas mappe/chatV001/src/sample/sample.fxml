@@ -41,8 +41,9 @@
         <Text fx:id="welcomeText" fill="#1d0033" layoutX="127.0" layoutY="59.0" scaleX="2.25908218634198" scaleY="2.3231006097531495" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome, username!" />
         <SplitMenuButton fx:id="statusButton" layoutX="245.0" layoutY="107.0" mnemonicParsing="false" prefWidth="109.0" text="Status">
           <items>
-            <MenuItem mnemonicParsing="false" text="Action 1" />
-            <MenuItem mnemonicParsing="false" text="Action 2" />
+            <MenuItem mnemonicParsing="false"  text="Busy" fx:id="busyButton" />
+            <MenuItem mnemonicParsing="false" onAction="#setStatusOnline" text="Online" />
+            <MenuItem mnemonicParsing="false" onAction="#setStatusDisconnect" text="Disconnect" />
           </items>
         </SplitMenuButton>
       </children>

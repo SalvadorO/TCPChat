@@ -10,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
@@ -32,6 +33,7 @@ public class ClientFX  extends Service<Void> {
 
     ObservableMap<String,String> chatHistory = FXCollections.observableMap(new HashMap<>());
     boolean isClientOnline,loggedOn = false,isCreatingUser = false;
+    private MenuItem busyButton;
     String hostName;
     int portNumber;
     TextArea textArea;
@@ -41,12 +43,13 @@ public class ClientFX  extends Service<Void> {
 
 
 
-    public ClientFX(String ipAdress, int port, TextField textField, TextArea textArea, Text startText) {
+    public ClientFX(String ipAdress, int port, TextField textField, TextArea textArea, Text startText, MenuItem busybutton) {
         this.hostName = ipAdress;
         this.portNumber = port;
         this.textField = textField;
         this.textArea = textArea;
         this.startText = startText;
+        this.busyButton = busybutton;
 
         System.out.println("Client is up!");
 
@@ -76,7 +79,7 @@ public class ClientFX  extends Service<Void> {
 
 
     @Override
-    protected synchronized Task<Void> createTask() {
+    protected  Task<Void> createTask() {
 
         Task<Void> task = new Task<Void>() {
             protected Void call() throws InterruptedException {
@@ -109,6 +112,7 @@ public class ClientFX  extends Service<Void> {
 
                     }
 
+                    busyButton.setOnAction(event1 -> outStream.println("[SetClientBusy*OK]"));
 
 
                     textField.setOnAction(event -> {
@@ -229,7 +233,7 @@ public class ClientFX  extends Service<Void> {
             textArea.setDisable(true);
             textArea.setVisible(false);
             textField.setDisable(true);
-            startText.setText("user on the list is not available");
+            startText.setText("user on the list is not online");
             startText.setVisible(true);
         } else {
             startText.setVisible(false);
