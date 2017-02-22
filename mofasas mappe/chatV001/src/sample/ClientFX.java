@@ -10,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -63,7 +64,7 @@ public class ClientFX  extends Service<Void> {
         } catch (UnknownHostException e) {
             System.out.println("Unknown host!");
         } catch (IOException e) {
-            System.out.println(e + "nana");
+            alertDialogs("Connection Error","Can not connect to server");
         }
 
 
@@ -88,7 +89,6 @@ public class ClientFX  extends Service<Void> {
                 System.out.println("call");
                 try {
 
-
                     while (!loggedOn){
 
                         if (!username.isEmpty() && !password.isEmpty()) {
@@ -103,11 +103,12 @@ public class ClientFX  extends Service<Void> {
                                 loggedOn = true;
                                 break;
                             } else if (inLine.equals("[LogInNotApproved*OK]")){
-                                System.out.println("WRONG PASSORD OR USERNAME");
-                            } else if (inLine.equals("[CreateNewUser*OK]")){
-                                System.out.println("USER ALREADY EXSISTS");
+                                alertDialogs("Login Error","Wrong password or username.");
+                            } else if (inLine.equals("[CreateNewUser*ERROR]")){
+                                alertDialogs("Create User Error","Username already exists.");
+                            } else if (inLine.equals("[UserIsOnline*ERROR]")){
+                                alertDialogs("Login Error ", "You are already logged in");
                             }
-
 
                         }
                         outStream.flush();
@@ -337,6 +338,17 @@ public class ClientFX  extends Service<Void> {
 
 
         }
+    }
+
+    private void alertDialogs(String headerText, String contentText){
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("ERROR");
+            alert.setHeaderText(headerText);
+            alert.setContentText(contentText);
+
+            alert.showAndWait();
+        });
     }
 
     public ObservableList<String> getObservableOffline() {

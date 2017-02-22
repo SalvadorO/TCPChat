@@ -50,6 +50,9 @@ public class Controller implements Initializable{
     private void whenSignedIn(boolean isSignedIn){
         if (isSignedIn) {
 
+            Main.getPrimaryStage().setMinWidth(830);
+            Main.getPrimaryStage().setMinHeight(600);
+
             username.setVisible(false);
             passwd.setVisible(false);
             username.setDisable(true);
@@ -187,7 +190,7 @@ public class Controller implements Initializable{
         Main.getPrimaryStage().setOnCloseRequest(event -> {
             try {
 
-                if (client != null) client.getCliSocket().close();
+                if (client != null && client.getCliSocket() != null) client.getCliSocket().close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
