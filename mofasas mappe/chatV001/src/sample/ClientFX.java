@@ -62,7 +62,8 @@ public class ClientFX  extends Service<Void> {
 
 
         } catch (UnknownHostException e) {
-            System.out.println("Unknown host!");
+            alertDialogs("Connection Error","Connected host is unknown.");
+
         } catch (IOException e) {
             alertDialogs("Connection Error","Can not connect to server.");
         }
@@ -99,18 +100,22 @@ public class ClientFX  extends Service<Void> {
                         }
 
                         while ((inLine = inStream.readLine()) != null) {
-                            
+
                             if (inLine.equals("[LogInApproved*OK]")){
                                 loggedOn = true;
                                 break;
-                            } else if (inLine.equals("[LogInNotApproved*OK]")){
-                                alertDialogs("Login Error","Wrong password or username.");
-                            } else if (inLine.equals("[CreateNewUser*ERROR]")){
-                                alertDialogs("Create User Error","Username already exists.");
-                            } else if (inLine.equals("[UserIsOnline*ERROR]")){
-                                alertDialogs("Login Error ", "You are already logged in");
-                            }
+                            } else
+                              switch (inLine){
+                                  case "[LogInNotApproved*OK]" : alertDialogs("Login Error","Wrong password or username.");
+                                      break;
+                                  case "[CreateNewUser*ERROR]" : alertDialogs("Create User Error","Username already exists.");
+                                      break;
+                                  case "[UserIsOnline*ERROR]" :  alertDialogs("Login Error ", "You are already logged in");
+                                      break;
+                                  case "[CreateUsername*ERROR]" : alertDialogs("Create User Error", "Username is too short. Please try again");
+                                      break;
 
+                              }
                         }
                         outStream.flush();
 
@@ -161,6 +166,7 @@ public class ClientFX  extends Service<Void> {
 
                             Platform.runLater(() ->{
 
+
                                 observableOffline.clear();
                                 observableOffline.addAll(offlineUsers);
 
@@ -204,23 +210,16 @@ public class ClientFX  extends Service<Void> {
 
                     }
 
-                    System.out.println("call ferdig");
-
                     cliSocket.close();
                 } catch (IOException e) {
-                    System.out.println("IOEx");
+                   if (Main.getPrimaryStage().isShowing()) alertDialogs("Connection Error", "Lost connection to server");
                     outStream.close();
+                } catch (ConcurrentModificationException cme){
+                    alertDialogs("Graphical Display error", "Can not update interface");
                 }
-                System.out.println("call ferdiglill");
                 return null;
             }
         };
-
-
-
-
-
-
         return task;
     }
 

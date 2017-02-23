@@ -10,11 +10,14 @@ import javafx.scene.text.Text;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable{
 
     ClientFX client;
+    private String serverIp = "localhost";
+    private int port = 5555;
 
     @FXML
     public TextField txtField,username;
@@ -26,7 +29,7 @@ public class Controller implements Initializable{
     public TextArea txtArea,clientInfo;
 
     @FXML
-    Button loginbutton, buttonCreateUser;
+    Button loginbutton, buttonCreateUser,editServerButton;
 
     @FXML  ListView<String> onlinelist,offlinelist,busylist;
 
@@ -45,7 +48,7 @@ public class Controller implements Initializable{
     public void startClient() {
 
 
-        client = new ClientFX("localhost", 5555,txtField,txtArea,startText,busyButton, onlineButton);
+        client = new ClientFX(serverIp, port,txtField,txtArea,startText,busyButton, onlineButton);
         client.setClientOnline(true);
 
     }
@@ -55,6 +58,7 @@ public class Controller implements Initializable{
 
             Main.getPrimaryStage().setMinWidth(830);
             Main.getPrimaryStage().setMinHeight(600);
+            Main.getPrimaryStage().centerOnScreen();
 
             username.setVisible(false);
             passwd.setVisible(false);
@@ -62,6 +66,8 @@ public class Controller implements Initializable{
             passwd.setDisable(true);
             loginbutton.setDisable(true);
             loginbutton.setVisible(false);
+            editServerButton.setDisable(true);
+            editServerButton.setVisible(false);
             buttonCreateUser.setDisable(true);
             buttonCreateUser.setVisible(false);
 
@@ -134,6 +140,15 @@ public class Controller implements Initializable{
 
         whenSignedIn(client.isLoggedOn());
 
+    }
+
+    @FXML public void editServer(){
+        TextInputDialog dialog = new TextInputDialog(serverIp);
+        dialog.setHeaderText("Server configurations");
+        dialog.setContentText("Please enter server IP address");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> serverIp = name);
     }
 
     @FXML public void createNewUser(){

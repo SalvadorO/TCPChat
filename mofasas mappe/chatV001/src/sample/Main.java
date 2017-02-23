@@ -7,7 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-    private static Stage primaryStage; // **Declare static Stage**
+    private static Stage primaryStage;
 
     private void setPrimaryStage(Stage stage) {
         Main.primaryStage = stage;
@@ -18,11 +18,11 @@ public class Main extends Application {
     }
     @Override
     public void start(Stage primaryStage) throws Exception{
-            setPrimaryStage(primaryStage); // **Set the Stage**
+            setPrimaryStage(primaryStage);
 
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root, 375, 253));
+        primaryStage.setScene(new Scene(root, 380, 300));
         primaryStage.show();
     }
 
