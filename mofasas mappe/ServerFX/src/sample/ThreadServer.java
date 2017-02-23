@@ -1,6 +1,8 @@
 package sample;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -30,8 +32,11 @@ public class ThreadServer extends Service<Void>
     ArrayList<String> onlineUsernames = new ArrayList<>();
     ArrayList<String> offlineUsernames = new ArrayList<>();
     ArrayList<String> busyUsernames = new ArrayList<>();
+    ObservableList<String> observableOnline;
+    ObservableList<String> observableOffline;
+    ObservableList<String> observableBusy;
 
-    boolean[] test;
+
     Users user;
     String myUsername;
     PrintWriter out;
@@ -39,18 +44,22 @@ public class ThreadServer extends Service<Void>
 
 
 
-    public ThreadServer(Socket sock, boolean[] test, ArrayList<String> onlineUsernames, ArrayList<String> offlineUsernames,
-                        ArrayList<String> busyUsernames     ,ArrayList<Users> usersList ) {
+    public ThreadServer(Socket sock, ArrayList<String> onlineUsernames, ArrayList<String> offlineUsernames,
+                        ArrayList<String> busyUsernames ,ArrayList<Users> usersList, ObservableList<String> observableOnline,
+                        ObservableList<String> observableOffline, ObservableList<String> observableBusy) {
         this.sock = sock;
         cliAddr = sock.getInetAddress();
         cliPort = sock.getPort();
         servPort = sock.getLocalPort();
 
-        this.test = test;
+
         this.onlineUsernames = onlineUsernames;
         this.offlineUsernames = offlineUsernames;
         this.busyUsernames = busyUsernames;
         this.listOfOnlineUsers = usersList;
+        this.observableBusy = observableBusy;
+        this.observableOffline = observableOffline;
+        this.observableOnline = observableOnline;
 
     }
 
@@ -191,6 +200,8 @@ public class ThreadServer extends Service<Void>
                 if (user.manageUser(username,"checkExistingUser")){
                     System.out.println("Bruker allrede eksisterer!");
                     out.println("[CreateNewUser*ERROR]");
+                } else if (username == null || username.length() < 4){
+                    out.println("[CreateUsername*ERROR]");
                 } else {
                     System.out.println("EY det funka å laggd en ny bruker: " + usernamepasswd);
                     user.writeToFile(usernamepasswd);
@@ -204,7 +215,6 @@ public class ThreadServer extends Service<Void>
                     break;
 
                 }
-
 
             }
 
@@ -284,10 +294,26 @@ public class ThreadServer extends Service<Void>
                         }
 
 
-                        out.println("[SendingListOfUsers*DONE]");                    }
+                        out.println("[SendingListOfUsers*DONE]");
+
+                        Platform.runLater(() ->{
+                                    observableOffline.clear();
+                                    observableOffline.addAll(offlineUsernames);
+
+                                    observableOnline.clear();
+                                    observableOnline.addAll(onlineUsernames);
+
+                                    observableBusy.clear();
+                                    observableBusy.addAll(busyUsernames);
+
+                                }
+                        );
+
+
+                    }
                 },
-                0,      // run first occurrence immediately
-                1000);  // run every three seconds
+                0,      // immediately
+                1000);  // run every one second
 
 
 
@@ -300,7 +326,6 @@ public class ThreadServer extends Service<Void>
         Socket socket2 = null;
         String user2 = in.readLine();
 
-        System.out.println("OFFLINE USERS: " + offlineUsernames.toString()  + " ONLINE USERS: " + onlineUsernames.toString());
 
         System.out.println("user2: " + user2);
 
@@ -310,8 +335,6 @@ public class ThreadServer extends Service<Void>
             if (user.username.equals(user2)) {
                 System.out.println("bruker2: " + user.username);
                 socket2 = user.socket;
-
-
 
             }
 
@@ -343,4 +366,6 @@ public class ThreadServer extends Service<Void>
         }
 
     }
+
+
 }

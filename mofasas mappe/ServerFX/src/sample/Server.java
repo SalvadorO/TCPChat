@@ -1,6 +1,7 @@
 package sample;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -19,12 +20,14 @@ import java.util.regex.Pattern;
 public class Server  extends Task<Void> {
 
     int portNumber;
+    ThreadServer threadServer;
     ArrayList<Users> userList = new ArrayList<>();
-    boolean test[] = new boolean[1];
     ArrayList<String> usersOnline = new ArrayList<>();
     ArrayList<String> usersOffline = new ArrayList<>();
     ArrayList<String> usersBusy = new ArrayList<>();
-    private java.net.URL URL = getClass().getResource("ServerFX/../../passwd.txt");
+    ObservableList<String> observableOnline = FXCollections.observableArrayList();
+    ObservableList<String> observableOffline = FXCollections.observableArrayList();
+    ObservableList<String> observableBusy = FXCollections.observableArrayList();
 
 
 
@@ -43,11 +46,13 @@ public class Server  extends Task<Void> {
         try(
                 ServerSocket servSock = new ServerSocket(portNumber);
         ){
+
             System.out.println("server is up");
             listAllUsers();
-            test[0] = true;
             while(true){
-                ThreadServer threadServer = new ThreadServer(servSock.accept(),test,usersOnline,usersBusy,usersOffline,userList);
+                threadServer = new ThreadServer(servSock.accept(),usersOnline,usersOffline,usersBusy,userList
+                        ,observableOnline,observableOffline,observableBusy);
+
                 threadServer.start();
 
 
@@ -78,9 +83,12 @@ public class Server  extends Task<Void> {
             while((line = reader.readLine()) != null){
                 Matcher matcher = comp.matcher(line);
                 while(matcher.find()) {
-                    usersBusy.add(matcher.group(1));
+                    usersOffline.add(matcher.group(1));
+
                 }
             }
+            observableOffline.setAll(usersOffline);
+
             reader.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -90,5 +98,19 @@ public class Server  extends Task<Void> {
 
     }
 
+    public ObservableList<String> getObservableOnline() {
+        return observableOnline;
+    }
 
+    public ObservableList<String> getObservableOffline() {
+        return observableOffline;
+        }
+
+    public ObservableList<String> getObservableBusy() {
+        return observableBusy;
+    }
+
+    public ArrayList<Users> getUserList() {
+        return userList;
+    }
 }

@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 public class Users implements Serializable {
     public Socket socket;
     public String username;
-    private String status;
     public InetAddress userIP;
     public int userPort;
     public OutputStream userOutStream;
@@ -30,7 +29,6 @@ public class Users implements Serializable {
     public Users(Socket socket, String username) throws IOException {
         this.socket = socket;
         this.username = username;
-        this.status = "OFFLINE";
         userIP = socket.getInetAddress();
         userPort = socket.getPort();
         userOutStream = socket.getOutputStream();
@@ -38,18 +36,6 @@ public class Users implements Serializable {
 
     }
 
-    public Socket getSocket() {
-        return socket;
-    }
-
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
     public boolean manageUser(String info, String key) throws IOException{
         if(key.equals("login")){
@@ -106,4 +92,13 @@ public class Users implements Serializable {
 
     }
 
+    @Override
+    public String toString() {
+        return "User Info: " +
+                "port=" + socket.getLocalPort() +
+                " username='" + username + '\'' +
+                " userIP=" + userIP +
+                " userPort=" + userPort +".";
+
+    }
 }
