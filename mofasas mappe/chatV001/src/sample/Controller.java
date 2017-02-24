@@ -29,7 +29,7 @@ public class Controller implements Initializable{
     public TextArea txtArea,clientInfo;
 
     @FXML
-    Button loginbutton, buttonCreateUser,editServerButton;
+    Button loginbutton, buttonCreateUser,editServerButton, sendButton;
 
     @FXML  ListView<String> onlinelist,offlinelist,busylist;
 
@@ -42,13 +42,10 @@ public class Controller implements Initializable{
 
 
 
-
-
-
     public void startClient() {
 
 
-        client = new ClientFX(serverIp, port,txtField,txtArea,startText,busyButton, onlineButton);
+        client = new ClientFX(serverIp, port,txtField,txtArea,startText,busyButton, onlineButton, sendButton);
         client.setClientOnline(true);
 
     }
@@ -72,6 +69,7 @@ public class Controller implements Initializable{
             buttonCreateUser.setVisible(false);
 
             txtField.setVisible(true);
+            sendButton.setVisible(true);
 
             onlineText.setVisible(true);
             offlineText.setVisible(true);
@@ -123,7 +121,9 @@ public class Controller implements Initializable{
             });
         }
     }
-
+    /**
+     *
+     */
     @FXML public void loginserver(){
 
         startClient();
@@ -194,6 +194,8 @@ public class Controller implements Initializable{
 
         txtField.setDisable(true);
         txtField.setVisible(false);
+        sendButton.setDisable(true);
+        sendButton.setVisible(false);
         onlinelist.setDisable(true);
         onlinelist.setVisible(false);
         offlinelist.setDisable(true);

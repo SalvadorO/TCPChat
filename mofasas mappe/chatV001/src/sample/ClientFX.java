@@ -10,10 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.scene.control.Alert;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.text.Text;
 
 import java.io.IOException;
@@ -41,10 +38,12 @@ public class ClientFX  extends Service<Void> {
     TextField textField;
     Text startText;
     String username,username2,sender,password;
+    Button sendButton;
 
 
 
-    public ClientFX(String ipAdress, int port, TextField textField, TextArea textArea, Text startText, MenuItem busyButton, MenuItem onlineButton) {
+    public ClientFX(String ipAdress, int port, TextField textField, TextArea textArea, Text startText,
+                    MenuItem busyButton, MenuItem onlineButton, Button sendButton) {
         this.hostName = ipAdress;
         this.portNumber = port;
         this.textField = textField;
@@ -52,6 +51,7 @@ public class ClientFX  extends Service<Void> {
         this.startText = startText;
         this.busyButton = busyButton;
         this.onlineButton = onlineButton;
+        this.sendButton = sendButton;
 
         System.out.println("Client is up!");
 
@@ -88,15 +88,22 @@ public class ClientFX  extends Service<Void> {
             protected Void call() throws InterruptedException {
                 String inLine;
                 System.out.println("call");
+                sendButton.setDefaultButton(true);
                 try {
 
                     while (!loggedOn){
 
                         if (!username.isEmpty() && !password.isEmpty()) {
                             if (isCreatingUser){
-                                outStream.println("[CreateNewUser*OK]");
+                                if (!username.matches("(\\w+)") || !password.matches("(\\w+)")) {
+                                    alertDialogs("Create User", "Username and password must contain only digts or letters.");
+
+                                } else {
+                                    outStream.println("[CreateNewUser*OK]");
+                                }
+
                             }
-                            outStream.println(username + ":" + password);
+                            if (username.matches("(\\w+)") || password.matches("(\\w+)")) outStream.println(username + ":" + password);
                         }
 
                         while ((inLine = inStream.readLine()) != null) {
@@ -125,6 +132,7 @@ public class ClientFX  extends Service<Void> {
                         outStream.println("[SetClientOnline*OK]");
                         textArea.setVisible(true);
                         textField.setVisible(true);
+                        sendButton.setVisible(true);
                        startText.setText("");
                         startText.setVisible(false);
                     });
@@ -134,14 +142,13 @@ public class ClientFX  extends Service<Void> {
                         startText.setText("Status: BUSY");
 
                         textField.setVisible(false);
+                        sendButton.setVisible(false);
+
                         startText.setVisible(true);
                     });
 
 
-                    textField.setOnAction(event -> {
-
-
-
+                    sendButton.setOnAction(event1 -> {
                         outStream.println("[SendingAMessage*OK]");
                         outStream.println(textField.getText());
                         if (chatHistory.get(username2).equals(""))textArea.setText("You: " + textField.getText());
@@ -153,7 +160,6 @@ public class ClientFX  extends Service<Void> {
                         textField.clear();
                     });
 
-                    String listOfUsers;
                     while ((inLine = inStream.readLine()) != null) {
 
                         if (inLine.equals("[SendingListOfUsers*OK]")) {
@@ -248,6 +254,7 @@ public class ClientFX  extends Service<Void> {
             textArea.setDisable(true);
             textArea.setVisible(false);
             textField.setDisable(true);
+            sendButton.setDisable(true);
 
             startText.setText("user on the list is not online");
             startText.setVisible(true);
@@ -279,6 +286,7 @@ public class ClientFX  extends Service<Void> {
         textArea.setDisable(false);
         textArea.setVisible(true);
         textField.setDisable(false);
+        sendButton.setDisable(false);
 
 
 

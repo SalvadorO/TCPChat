@@ -14,7 +14,7 @@
   <children>
     <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="468.0" prefWidth="724.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
       <children>
-        <TextField fx:id="txtField" layoutX="375.0" layoutY="479.0" prefHeight="62.0" prefWidth="428.0" />
+        <TextField fx:id="txtField" layoutX="375.0" layoutY="479.0" prefHeight="62.0" prefWidth="341.0" />
         <TextArea fx:id="txtArea" layoutX="375.0" layoutY="12.0" prefHeight="457.0" prefWidth="428.0" wrapText="true" />
         <ListView fx:id="onlinelist" layoutX="14.0" layoutY="253.0" prefHeight="287.5" prefWidth="111.0" />
         <TextField fx:id="username" layoutX="118.0" layoutY="44.0" prefWidth="200.0" />
@@ -46,6 +46,7 @@
           </items>
         </SplitMenuButton>
         <Button fx:id="editServerButton" layoutX="126.0" layoutY="170.0" mnemonicParsing="false" onAction="#editServer" text="Edit Server Connection" />
+        <Button  fx:id="sendButton" layoutX="727.0" layoutY="485.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="70.66570281982422" text="Send" />
       </children>
     </AnchorPane>
   </children>
