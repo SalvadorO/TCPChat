@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -21,8 +22,9 @@ public class Main extends Application {
             setPrimaryStage(primaryStage);
 
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("Hello World");
+        primaryStage.setTitle("Zkype ™");
         primaryStage.setScene(new Scene(root, 380, 300));
+        primaryStage.getIcons().add(new Image("file:imgs/icon2.png"));
         primaryStage.show();
     }
 

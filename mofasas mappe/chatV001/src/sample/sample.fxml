@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.text.*?>
 
-<GridPane alignment="CENTER" hgap="10.0" layoutX="0.0" prefHeight="601.0" prefWidth="830.0" vgap="10.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="sample.Controller">
+<GridPane style="-fx-background-color: #a0a3d6;" alignment="CENTER" hgap="10.0" layoutX="0.0" prefHeight="601.0" prefWidth="830.0" vgap="10.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="sample.Controller">
   <children>
     <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="468.0" prefWidth="724.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
       <children>
