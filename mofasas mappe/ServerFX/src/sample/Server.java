@@ -15,9 +15,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by Mustafe on 20.02.2017.
+ * This class extends Task<Void> which enables the client to connect to a server in a separated thread.
+ * This class consists of lists that are passed to each separated thread.
  */
-public class Server  extends Task<Void> {
+
+public class Server extends Task<Void> {
 
     int portNumber;
     ThreadServer threadServer;
@@ -30,14 +32,20 @@ public class Server  extends Task<Void> {
     ObservableList<String> observableBusy = FXCollections.observableArrayList();
 
 
-
-
+    /**
+     * Construct an instance of this class.
+     * @param portNumber sets a port number for the server socket.
+     */
     public Server(int portNumber)
     {
         this.portNumber = portNumber;
     }
 
-
+    /**
+     * Creates new instances of ThreadServer each time server sockets connects to a client through the portnumber, and then starts its thread.
+     * @return null
+     * @throws Exception thrown when serversocket loses connection.
+     */
     @Override
     public Void call() throws Exception
     {
@@ -47,7 +55,6 @@ public class Server  extends Task<Void> {
                 ServerSocket servSock = new ServerSocket(portNumber);
         ){
 
-            System.out.println("server is up");
             listAllUsers();
             while(true){
                 threadServer = new ThreadServer(servSock.accept(),usersOnline,usersOffline,usersBusy,userList
@@ -68,12 +75,20 @@ public class Server  extends Task<Void> {
 
         return null;
     }
+
+    /**
+     * Creates a new Thread for this class.
+     */
     public void start()
     {
         Thread t = new Thread(this);
         t.start();
     }
 
+    /**
+     * Adds usernames found in passwd.txt to an arraylist. This list consists of all user names that has been registered.
+     * If passwd.txt is not found, then this metoden wouls throw and catch FileNotFoundException and print stacktrace.
+     */
     public void listAllUsers(){
 
         Pattern comp = Pattern.compile("(\\w+)[:](\\w+)");
@@ -98,18 +113,31 @@ public class Server  extends Task<Void> {
 
     }
 
+    /**
+     * Observablelist that consists of usernames that are currently online.
+     * @return the list of online user names.
+     */
     public ObservableList<String> getObservableOnline() {
         return observableOnline;
     }
-
+    /**
+     * Observablelist that consists of usernames that are currently offline.
+     * @return the list of offline user names.
+     */
     public ObservableList<String> getObservableOffline() {
         return observableOffline;
         }
-
+    /**
+     * Observablelist that consists of usernames that are currently busy.
+     * @return the list of busy user names.
+     */
     public ObservableList<String> getObservableBusy() {
         return observableBusy;
     }
-
+    /**
+     * Arraylist that consists of instances of the class Users. Each has their own username, socket instance ect.
+     * @return the list of users.
+     */
     public ArrayList<Users> getUserList() {
         return userList;
     }

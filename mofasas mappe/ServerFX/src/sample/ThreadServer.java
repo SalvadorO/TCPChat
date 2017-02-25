@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 
 import java.io.BufferedReader;
@@ -19,7 +20,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by Mustafe on 20.02.2017.
+ * This class serves a new thread each time a client is connected. The thread gets an uniqe socket that will be used to indetify client socket.
+ * It serves information and functionality when it receives requests from the client, such as creating a conversation, sending lists of usernames
+ * and changing the state/status of the client.
  */
 public class ThreadServer extends Service<Void>
 {
@@ -43,7 +46,18 @@ public class ThreadServer extends Service<Void>
     BufferedReader in;
 
 
-
+    /**
+     *  Constructor new instance of this class each time a client connects. Now will this class have access to client socket.
+     *  then it will set values to its socket and lists (online, busy and offline).
+     * @param sock set value to socket.
+     * @param onlineUsernames set value to online username list.
+     * @param offlineUsernames  set value to offline username list.
+     * @param busyUsernames  set value to busy username list.
+     * @param usersList  set value to user list.
+     * @param observableOnline  set value to observable online username list,
+     * @param observableOffline  set value to observable offline username list
+     * @param observableBusy set value to observable busy username list
+     */
     public ThreadServer(Socket sock, ArrayList<String> onlineUsernames, ArrayList<String> offlineUsernames,
                         ArrayList<String> busyUsernames ,ArrayList<Users> usersList, ObservableList<String> observableOnline,
                         ObservableList<String> observableOffline, ObservableList<String> observableBusy) {
@@ -63,16 +77,15 @@ public class ThreadServer extends Service<Void>
 
     }
 
+    /**
+     *  Creates the task this class serves to the connected client, (in a separated thread).
+     * @return returns the task this class runs on.
+     */
     @Override
     protected Task<Void> createTask() {
         Task<Void> task = new Task<Void>() {
             @Override
             public Void call() throws InterruptedException {
-
-                ObservableMap<String, Socket> map = FXCollections.observableHashMap();
-
-                System.out.println("port: " + sock.getPort() + " br1: " );
-
 
                 try {
 
@@ -99,24 +112,23 @@ public class ThreadServer extends Service<Void>
                     }
 
                 } catch (IOException e) {
-                    System.out.println(e + " nei det er en IOEXEPTION");
 
                 } catch (InterruptedException p){
-
+                    alertDialogs("Interrupted Exception",p.getMessage());
                 } catch (ClassNotFoundException cs){
-                    cs.getCause();
+                    alertDialogs("ClassNotFoundException Exception",cs.getMessage());
+
                 } catch(ConcurrentModificationException cm){
-                    System.out.println("concurrent modexpetionz");
+                    alertDialogs("ConcurrentModificationException",cm.getMessage());
                 }finally{
 
 
+                    // At this time client has stopped sending messages to the server, in which its socket has closed,
+                    // and removes/adds the client into the lists.
                     listOfOnlineUsers.remove(user);
                     onlineUsernames.remove(myUsername);
                     if (busyUsernames.contains(myUsername)) busyUsernames.remove(myUsername);
                     offlineUsernames.add(user.username);
-
-                    System.out.println("sock er closed");
-
 
 
                 }
@@ -126,17 +138,22 @@ public class ThreadServer extends Service<Void>
         };
         return task;
     }
-    private void message(Socket sender, Socket reciever)  throws IOException {
-        PrintWriter out = new PrintWriter(reciever.getOutputStream(), true);
+
+    /**
+     * Depending on the inputs, and what the String value receivedText is, this method will create a new chat, set state on a client
+     * or send a message to an another client.
+     * @param sender  a socket in which a client sends a message though.
+     * @param receiver a socket in which a client receives a message from.
+     * @throws IOException throws and exception if one of the 2 sockets disconnects from this server
+     */
+    private void message(Socket sender, Socket receiver)  throws IOException {
+        PrintWriter out = new PrintWriter(receiver.getOutputStream(), true);
         BufferedReader in = new BufferedReader(new InputStreamReader(sender.getInputStream()));
 
 
         String recievedText;
 
-
         while ((recievedText = in.readLine()) != null) {
-            System.out.println("Dette er mld->" + recievedText + "<-");
-            System.out.println("my username is: " + myUsername);
 
             switch (recievedText){
                 case "[RequestingChat*OK]" :  manageChat();
@@ -145,7 +162,6 @@ public class ThreadServer extends Service<Void>
                     String message = in.readLine();
                     out.println(myUsername);
                     out.println(message);
-                    System.out.println("server sender dette: " + message);
                     break;
                 }
                 case "[SetClientBusy*OK]" : setClientBusy();
@@ -160,11 +176,18 @@ public class ThreadServer extends Service<Void>
 
     }
 
-
+    /**
+     * This method toggles the state of a client depending on what message it gets from the client.
+     * However this method will run only if a client has not entered a chat before changing its state
+     * @param firstLine the messeage the client sends to this server.
+     * @return  if parameter value is not request of changing a client state, it will break out of the while loop
+     * and return the newest message from the connected client.
+     * @throws IOException throw IOException if server loses connection to the client socket.
+     * @throws InterruptedException throws InterruptedException if current thread gets interrupted.
+     */
     private String setClientState( String firstLine) throws IOException, InterruptedException{
         while (true){
 
-            if (firstLine != null) System.out.println("g: " + firstLine);
             if (firstLine != null && firstLine.contains("SetClientOnline*OK")) {
                 setClientOnline();
                 firstLine = "";
@@ -181,35 +204,49 @@ public class ThreadServer extends Service<Void>
         }
     }
 
+    /**
+     * A method that creates a while-loop which waits for client input.
+     * The method will run until it sends a login aproval message back to the client
+     * @throws IOException throw IOException if server loses connection to the client socket
+     * @throws ClassNotFoundException throw ClassNotFoundException method tries to load in class that can not be found.
+     */
     private void checkUserPassword() throws IOException, ClassNotFoundException{
-
 
 
         String signInLine;
 
         while ((signInLine = in.readLine()) != null) {
 
+            // Creates an instance of Users class with its socket instance and username
             String username = extractUsername(signInLine);
             user = new Users(sock,username);
 
+            // if client wants to create a new user.
             if (signInLine.equals("[CreateNewUser*OK]")){
                String usernamepasswd = in.readLine();
 
                 username = extractUsername(usernamepasswd);
                 user.username = username;
+
+                // checks if the username already exists.
                 if (user.manageUser(username,"checkExistingUser")){
-                    System.out.println("Bruker allrede eksisterer!");
                     out.println("[CreateNewUser*ERROR]");
+
+                // checks if the username has a lenght of 4 or less.
                 } else if (username == null || username.length() < 4){
                     out.println("[CreateUsername*ERROR]");
                 } else {
-                    System.out.println("EY det funka å laggd en ny bruker: " + usernamepasswd);
+                    // finally creates an new user
+
+                    // saves the username and password into a textfile (passwd.txt)
                     user.writeToFile(usernamepasswd);
 
+                    // adds/removes username from the lists (busy, offline, online) before sending an approval message.
                     listOfOnlineUsers.add(user);
                     myUsername = user.username;
                     onlineUsernames.add(myUsername);
                     offlineUsernames.remove(myUsername);
+
 
                     out.println("[LogInApproved*OK]");
                     break;
@@ -219,23 +256,25 @@ public class ThreadServer extends Service<Void>
             }
 
 
+            // If the client wants to sign in
            else if (user.manageUser(signInLine,"login")){
                 
 
 
+                // checks if the user is already signed in.
                 if (onlineUsernames.contains(user.username)){
                     out.println("[UserIsOnline*ERROR]");
-                    System.out.println("aredde logged");
                     break;
                 }
+                // the user is allowd to login
 
+                // updates lists beore sending an approval message to the client
                 listOfOnlineUsers.add(user);
                 myUsername = user.username;
                 onlineUsernames.add(myUsername);
                 offlineUsernames.remove(myUsername);
 
                 out.println("[LogInApproved*OK]");
-                System.out.println(signInLine);
                 break;
 
             } else
@@ -245,27 +284,39 @@ public class ThreadServer extends Service<Void>
         }
 
     }
+
+    /**
+     * this method checks if the client is connected to this (separated thread) server, if not, an exception is thrown.
+     * @param s the socket that belongs to the client.
+     * @return returns a true/false statement while reading from a inputstream  to check if it is still connected,
+     * @throws IOException throws IOException when socket is disconnected.
+     */
     private boolean isSocketConnected(Socket s) throws IOException{
         return s.getInputStream().read() != -1;
     }
 
 
+    /**
+     * This method gets a string and extract the username from it.
+     * @param string a string line that consists of password and username
+     * @return returns an username
+     */
     private String extractUsername(String string){
         String pattern = "(\\w+)[:](\\w+)";
         Pattern comp = Pattern.compile(pattern);
         Matcher match = comp.matcher(string);
         if(match.find()){
-            System.out.println(match.group(1));
             return match.group(1);
         }
         return null;
     }
 
+    /**
+     * This method creates a timer that for each second sends lists (offline, online, busy) to all clients.
+     */
     private void sendUserList(){
 
         Timer t = new Timer();
-
-
 
         t.scheduleAtFixedRate(
                 new TimerTask()
@@ -292,10 +343,9 @@ public class ThreadServer extends Service<Void>
 
                             out.println(users);
                         }
-
-
                         out.println("[SendingListOfUsers*DONE]");
 
+                        // clears and adds arraylist to observablelist.
                         Platform.runLater(() ->{
                                     observableOffline.clear();
                                     observableOffline.addAll(offlineUsernames);
@@ -321,19 +371,22 @@ public class ThreadServer extends Service<Void>
 
     }
 
+    /**
+     * This methoed iterates the user list that consists of Users instances. First it gets an input from the client (String user2)
+     * then compares the username to all users. When it finally finds the User instance, it will extract the socket instance and send it to
+     * message() method
+     * @throws IOException throws IOException when socket is disconnected.
+     */
     private void manageChat() throws IOException {
 
         Socket socket2 = null;
         String user2 = in.readLine();
 
 
-        System.out.println("user2: " + user2);
-
         for (Users user : listOfOnlineUsers) {
 
-
             if (user.username.equals(user2)) {
-                System.out.println("bruker2: " + user.username);
+                // username match!
                 socket2 = user.socket;
 
             }
@@ -341,6 +394,7 @@ public class ThreadServer extends Service<Void>
         }
         if (socket2 != null) {
 
+            // if socket is not null, create a conversation between sock/sender and socket2/receiver.
             message(sock, socket2);
 
 
@@ -350,6 +404,9 @@ public class ThreadServer extends Service<Void>
 
     }
 
+    /**
+     * changing client state by removing/adding user on the lists.
+     */
     private void setClientBusy(){
         if (onlineUsernames.contains(myUsername)){
             onlineUsernames.remove(myUsername);
@@ -358,13 +415,32 @@ public class ThreadServer extends Service<Void>
         }
 
     }
-
+    /**
+     * changing client state by removing/adding user on the lists.
+     */
     private void setClientOnline(){
         if (busyUsernames.contains(myUsername)){
             busyUsernames.remove(myUsername);
             onlineUsernames.add(myUsername);
         }
 
+    }
+
+    /**
+     * When the compiler throws an exception, this method will be called.
+     * It will create an alert popup that describes the exceptions.
+     * @param headerText sets text on the header area.
+     * @param contentText sets text on the content area.
+     */
+    private void alertDialogs(String headerText, String contentText){
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("ERROR");
+            alert.setHeaderText(headerText);
+            alert.setContentText(contentText);
+
+            alert.showAndWait();
+        });
     }
 
 
